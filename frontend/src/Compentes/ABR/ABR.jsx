@@ -1,100 +1,126 @@
+import { useEffect, useState } from "react";
 import Tree from "react-d3-tree";
-import { useState } from "react";
-import {NavBar , HomePageOfTPOne} from "../index"
+import { NavBar, HomePageOfTPOne } from "../index";
+
 
 const ABR = () => {
-    const [number, setNumber] = useState("");
-    const [treeData, setTreeData] = useState(null);
-    const [info, setInfo] = useState(null);
+  const [treeData, setTreeData] = useState(null);
+  const [info, setInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  const fetchTree = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/abr/show");
+      const data = await res.json();
+      setTreeData(data);
+    } catch (err) {
+      setError("Erreur lors du chargement de l’arbre");
+    }
+  };
 
-    const handleInsert = async () => {
-    if (!number) return;
-    const res = await fetch("http://127.0.0.1:5000/abr/insert", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value: parseInt(number) }),
-    });
-    const data = await res.json();
-    setTreeData(data);
-    setNumber("");
-    };
+  const fetchInfo = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/abr/info");
+      const data = await res.json();
+      setInfo(data);
+    } catch (err) {
+      setError("Erreur lors du chargement des informations");
+    }
+  };
 
-    const handleReset = async () => {
-    await fetch("http://127.0.0.1:5000/reset", { method: "POST" });
-    setTreeData(null);
-    };
+  useEffect(() => {
+    Promise.all([fetchTree(), fetchInfo()]).finally(() => setLoading(false));
+  }, []);
 
+  const handleRefresh = async () => {
+    setLoading(true);
+    await Promise.all([fetchTree(), fetchInfo()]);
+    setLoading(false);
+  };
 
-    const fetchInfo = async () => {
-    const res = await fetch("http://127.0.0.1:5000/abr/info");
-    const data = await res.json();
-    setInfo(data);
-    };
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-green-50 p-6">
+      <NavBar />
+      <HomePageOfTPOne />
+      <h1 className="text-3xl font-bold text-green-700 mb-6">
+        Arbre Binaire de Recherche (ABR)
+      </h1>
 
-    return (
-        <div>
-          <NavBar />
-          <HomePageOfTPOne />
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <h1 className="text-3xl font-bold mb-6">Arbre binaire de recherche (ABR)</h1>
-
-        {/* Input */}
-        <div className="flex gap-2 mb-4">
-          <input
-            type="number"
-            value={number}
-            onChange={(e) => setNumber(e.target.value)}
-            className="border p-2 rounded"
-            placeholder="Enter number"
-          />
-          <button
-            onClick={handleInsert}
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Insert
-          </button>
-          <button
-            onClick={handleReset}
-            className="bg-red-500 text-white px-4 py-2 rounded"
-          >
-            Reset
-          </button>
-        </div>
-
-        <button
-        onClick={fetchInfo}
-        className="bg-green-500 text-white px-4 py-2 rounded"
-        >
-        Get Info
-        </button>
-
-        {info && (
-        <div className="mt-4 p-4 border rounded bg-gray-50">
-            <p><strong>Hauteur:</strong> {info.height -1}</p>
-            <p><strong>Degré:</strong> {info.degree}</p>
-            <p><strong>Densité:</strong> {info.density.toFixed(2)}</p>
-        </div>
-        )}
-
-        {/* Tree display centered */}
-        <div
-          id="treeWrapper"
-          className="flex items-center justify-center border bg-white rounded shadow"
-          style={{ width: "100%", height: "500px" }}
-        >
-          {treeData && (
-            <Tree
-              data={treeData}
-              orientation="vertical"
-              translate={{ x: window.innerWidth / 2, y: 100 }}
-            />
+      <button
+        onClick={handleRefresh}
+        className="mb-6 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl shadow transition"
+      >
+        Rafraîchir l’arbre
+      </button>
+      {/* ℹ️ Info Section */}
+          {info && (
+            <div className="bg-white p-4 rounded-xl shadow w-80 text-center">
+              <h2 className="text-2xl font-semibold text-green-700 mb-4">
+                Informations sur l’arbre
+              </h2>
+              <div className="space-y-2 text-gray-700">
+                <p>
+                  <strong>Hauteur :</strong> {info.height}
+                </p>
+                <p>
+                  <strong>Degré maximal :</strong> {info.degree}
+                </p>
+                <p>
+                  <strong>Densité :</strong> {info.density.toFixed(2)}
+                </p>
+              </div>
+            </div>
           )}
-        </div>
-      </div>
-        </div>
-    );
-}
+      {loading ? (
+        <p className="text-gray-500">Chargement...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : (
+        <>
+          {/*  Visual Tree Section */}
+          {treeData ? (
+            <div className="bg-white p-4 rounded-xl shadow w-full h-[500px] flex items-center justify-center mb-8">
+              <Tree
+                data={treeData}
+                orientation="vertical"
+                translate={{ x: 600, y: 60 }}
+                zoom={0.8}
+                separation={{ siblings: 1.2, nonSiblings: 1.8 }}
+                pathFunc="elbow"
+                styles={{
+                  links: {
+                    stroke: "#16a34a", // green
+                    strokeWidth: 2,
+                  },
+                  nodes: {
+                    node: {
+                      circle: {
+                        fill: "#16a34a",
+                        stroke: "#14532d",
+                        strokeWidth: 2,
+                      },
+                      name: { fill: "#14532d", fontWeight: "bold" },
+                    },
+                    leafNode: {
+                      circle: {
+                        fill: "#86efac",
+                        stroke: "#15803d",
+                        strokeWidth: 2,
+                      },
+                      name: { fill: "#14532d", fontWeight: "bold" },
+                    },
+                  },
+                }}
+              />
+            </div>
+          ) : (
+            <p className="text-gray-500">Aucun arbre à afficher</p>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
 
 export default ABR;
-
