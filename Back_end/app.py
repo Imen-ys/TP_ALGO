@@ -266,82 +266,231 @@ def get_info_avl():
 
 
 
+
+
+# -------------------- TAS MIN (Min-Heap) --------------------
+class MinHeap:
+    def __init__(self):
+        self.heap = []
+
+    def insert(self, value):
+        self.heap.append(value)
+        self._heapify_up(len(self.heap) - 1)
+
+    def reset(self):
+        self.heap = []
+
+    def _heapify_up(self, index):
+        parent = (index - 1) // 2
+        if index > 0 and self.heap[index] < self.heap[parent]:
+            self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
+            self._heapify_up(parent)
+
+    def _to_tree_dict(self, index=0):
+        if index >= len(self.heap):
+            return None
+        left = self._to_tree_dict(2 * index + 1)
+        right = self._to_tree_dict(2 * index + 2)
+        return {
+            "name": str(self.heap[index]),
+            "children": [c for c in [left, right] if c]
+        }
+
+    def tree_height(self, index=0):
+        if index >= len(self.heap):
+            return 0
+        return 1 + max(self.tree_height(2 * index + 1), self.tree_height(2 * index + 2))
+
+    def node_count(self):
+        return len(self.heap)
+
+    def max_degree(self, index=0):
+        if index >= len(self.heap):
+            return 0
+        degree = 0
+        if 2 * index + 1 < len(self.heap): degree += 1
+        if 2 * index + 2 < len(self.heap): degree += 1
+        return max(degree,
+                   self.max_degree(2 * index + 1),
+                   self.max_degree(2 * index + 2))
+
+    def density(self):
+        h = self.tree_height()
+        n = self.node_count()
+        return n / h if h > 0 else 0
+
+# Create a global instance of MinHeap
+heap = MinHeap()
+
+# --- Routes ---
+
+@app.route("/tasmin/insert", methods=["POST"])
+def insert_tasmin():
+    value = request.json["value"]
+    heap.insert(value)
+    return jsonify(heap._to_tree_dict())
+
+@app.route("/tasmin/reset", methods=["POST"])
+def reset_tasmin():
+    heap.reset()
+    return jsonify({"message": "TasMin reset!"})
+
+@app.route('/tasmin/upload', methods=['POST'])
+def upload_file_tasmin():
+    # Reset the heap before inserting new values
+    heap.reset()
+    
+    file = request.files['file']
+    content = file.read().decode('utf-8')
+
+    import re
+    cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
+    all_numbers = [int(n) for n in re.findall(r'\d+', cleaned)]
+
+    filtered = [n for i, n in enumerate(all_numbers) if (i + 1) % 3 != 0]
+
+    # Insert each value into the heap
+    for v in filtered:
+        heap.insert(v)
+
+    return jsonify({
+        'message': 'File uploaded and TASMIN built successfully!',
+        'values': filtered
+    })
+
+@app.route('/tasmin/show', methods=['GET'])
+def show_tasmin():
+    if not heap.heap:
+        return jsonify({"message": "No TASMIN tree yet"}), 200
+    return jsonify(heap._to_tree_dict()), 200
+
+@app.route('/tasmin/info', methods=['GET'])
+def get_info_tasmin():
+    if not heap.heap:
+        return jsonify({"height": 0, "degree": 0, "density": 0}), 200
+    info = {
+        "height": heap.tree_height(),
+        "degree": heap.max_degree(),
+        "density": heap.density()
+    }
+    return jsonify(info), 200
+
+
+
+
+
+# -------------------- TAS MAX (Max-Heap) --------------------
+class MaxHeap:
+    def __init__(self):
+        self.heap = []
+
+    def insert(self, value):
+        self.heap.append(value)
+        self._heapify_up(len(self.heap) - 1)
+
+    def reset(self):
+        self.heap = []
+
+    def _heapify_up(self, index):
+        parent = (index - 1) // 2
+        if index > 0 and self.heap[index] > self.heap[parent]:  # Changed from < to >
+            self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
+            self._heapify_up(parent)
+
+    def _to_tree_dict(self, index=0):
+        if index >= len(self.heap):
+            return None
+        left = self._to_tree_dict(2 * index + 1)
+        right = self._to_tree_dict(2 * index + 2)
+        return {
+            "name": str(self.heap[index]),
+            "children": [c for c in [left, right] if c]
+        }
+
+    def tree_height(self, index=0):
+        if index >= len(self.heap):
+            return 0
+        return 1 + max(self.tree_height(2 * index + 1), self.tree_height(2 * index + 2))
+
+    def node_count(self):
+        return len(self.heap)
+
+    def max_degree(self, index=0):
+        if index >= len(self.heap):
+            return 0
+        degree = 0
+        if 2 * index + 1 < len(self.heap): degree += 1
+        if 2 * index + 2 < len(self.heap): degree += 1
+        return max(degree,
+                   self.max_degree(2 * index + 1),
+                   self.max_degree(2 * index + 2))
+
+    def density(self):
+        h = self.tree_height()
+        n = self.node_count()
+        return n / h if h > 0 else 0
+
+# Create a global instance of MaxHeap
+heap = MaxHeap()
+
+# --- Routes ---
+
+@app.route("/tasmax/insert", methods=["POST"])
+def insert_tasmax():
+    value = request.json["value"]
+    heap.insert(value)
+    return jsonify(heap._to_tree_dict())
+
+@app.route("/tasmax/reset", methods=["POST"])
+def reset_tasmax():
+    heap.reset()
+    return jsonify({"message": "TasMax reset!"})
+
+@app.route('/tasmax/upload', methods=['POST'])
+def upload_file_tasmax():
+    # Reset the heap before inserting new values
+    heap.reset()
+    
+    file = request.files['file']
+    content = file.read().decode('utf-8')
+
+    import re
+    cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
+    all_numbers = [int(n) for n in re.findall(r'\d+', cleaned)]
+
+    filtered = [n for i, n in enumerate(all_numbers) if (i + 1) % 3 != 0]
+
+    # Insert each value into the heap
+    for v in filtered:
+        heap.insert(v)
+
+    return jsonify({
+        'message': 'File uploaded and TASMAX built successfully!',
+        'values': filtered
+    })
+
+@app.route('/tasmax/show', methods=['GET'])
+def show_tasmax():
+    if not heap.heap:
+        return jsonify({"message": "No TASMAX tree yet"}), 200
+    return jsonify(heap._to_tree_dict()), 200
+
+@app.route('/tasmax/info', methods=['GET'])
+def get_info_tasmax():
+    if not heap.heap:
+        return jsonify({"height": 0, "degree": 0, "density": 0}), 200
+    info = {
+        "height": heap.tree_height(),
+        "degree": heap.max_degree(),
+        "density": heap.density()
+    }
+    return jsonify(info), 200
+
 if __name__ == "__main__":
     app.run(debug=True)
 
-# # -------------------- TAS MIN (Min-Heap) --------------------
-# class MinHeap:
-#     def __init__(self):
-#         self.heap = []
-
-#     def insert(self, value):
-#         self.heap.append(value)
-#         self._heapify_up(len(self.heap) - 1)
-
-#     def reset(self):
-#         self.heap = []
-
-#     def _heapify_up(self, index):
-#         parent = (index - 1) // 2
-#         if index > 0 and self.heap[index] < self.heap[parent]:
-#             self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
-#             self._heapify_up(parent)
-
-#     def _to_tree_dict(self, index=0):
-#         if index >= len(self.heap):
-#             return None
-#         left = self._to_tree_dict(2 * index + 1)
-#         right = self._to_tree_dict(2 * index + 2)
-#         return {
-#             "name": str(self.heap[index]),
-#             "children": [c for c in [left, right] if c]
-#         }
-
-#     def height(self, index=0):
-#         if index >= len(self.heap):
-#             return 0
-#         return 1 + max(self.height(2 * index + 1), self.height(2 * index + 2))
-
-#     def node_count(self):
-#         return len(self.heap)
-
-#     def max_degree(self, index=0):
-#         if index >= len(self.heap):
-#             return 0
-#         degree = 0
-#         if 2 * index + 1 < len(self.heap): degree += 1
-#         if 2 * index + 2 < len(self.heap): degree += 1
-#         return max(degree,
-#                    self.max_degree(2 * index + 1),
-#                    self.max_degree(2 * index + 2))
-
-#     def density(self):
-#         h = self.height()
-#         n = self.node_count()
-#         return n / h if h > 0 else 0
 
 
-# heap = MinHeap()
-
-# @app.route("/tasmin/insert", methods=["POST"])
-# def insert_tasmin():
-#     value = request.json["value"]
-#     heap.insert(value)
-#     return jsonify(heap._to_tree_dict())
-
-# @app.route("/tasmin/reset", methods=["POST"])
-# def reset_tasmin():
-#     heap.reset()
-#     return jsonify({"message": "TasMin reset!"})
-
-# @app.route("/tasmin/info", methods=["GET"])
-# def get_info_tasmin():
-#     info = {
-#         "height": heap.height(),
-#         "degree": heap.max_degree(),
-#         "density": heap.density(),
-#     }
-#     return jsonify(info)
 
 # # -------------------- TAS MAX (Max-Heap) --------------------
 # class MaxHeap:

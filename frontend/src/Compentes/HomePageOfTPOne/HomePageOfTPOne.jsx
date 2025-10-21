@@ -19,12 +19,16 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
         ? "http://127.0.0.1:5000/upload"
         : type === "avl"
         ? "http://127.0.0.1:5000/avl/upload"
+        : type === "tasmin"
+        ? "http://127.0.0.1:5000/tasmin/upload"
+        : type === "tasmax"
+        ? "http://127.0.0.1:5000/tasmax/upload"
         : null;
 
     // if (!url) return alert("Unknown type");
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/upload", {
+      const response = await fetch(url, {
         method: "POST",
         body: formData,
       });
@@ -76,24 +80,32 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
           AVL
         </a>
         </button>
+
+        <button onClick={() => handleUpload("tasmin")}>
         <a
           href="/tp1/tasmin"
           className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
         >
           TASMIN
         </a>
+        </button>
+
+        <button onClick={() => handleUpload("tasmax")}>
         <a
           href="/tp1/tasmax"
           className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
         >
           TASMAX
         </a>
+        </button>
+        <button onClick={() => handleUpload("amr")}>
         <a
           href="/tp1/amr"
           className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
         >
           AMR
         </a>
+        </button>
         <a
           href="/tp1/B_ARBER"
           className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
