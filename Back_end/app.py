@@ -54,6 +54,59 @@ def density_ABR(node):
     n = node_count_ABR(node)
     return n / h if h > 0 else 0
 
+# --- NEW: Search function ---
+def search_abr(node, value):
+    if node is None:
+        return False
+    if node.value == value:
+        return True
+    elif value < node.value:
+        return search_abr(node.left, value)
+    else:
+        return search_abr(node.right, value)
+
+# --- NEW: Delete function ---
+def min_value_node(node):
+    current = node
+    while current.left is not None:
+        current = current.left
+    return current
+
+def delete_abr(node, value):
+    if node is None:
+        return node
+
+    if value < node.value:
+        node.left = delete_abr(node.left, value)
+    
+    # If the value to be deleted is greater than the node's value,
+    # then it lies in the right subtree
+    elif value > node.value:
+        node.right = delete_abr(node.right, value)
+    
+    # If value is same as node's value, then this is the node to be deleted
+    else:
+        # Node with only one child or no child
+        if node.left is None:
+            temp = node.right
+            node = None
+            return temp
+        elif node.right is None:
+            temp = node.left
+            node = None
+            return temp
+        
+        # Node with two children: Get the inorder successor
+        temp = min_value_node(node.right)
+        
+        # Copy the inorder successor's content to this node
+        node.value = temp.value
+        
+        # Delete the inorder successor
+        node.right = delete_abr(node.right, temp.value)
+    
+    return node
+
 # --- Routes ---
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -86,7 +139,6 @@ def upload_file():
         'values': filtered
     })
 
-
 @app.route('/abr/insert', methods=['POST'])
 def insert_value_abr():
     global root_abr
@@ -113,6 +165,36 @@ def get_info_abr():
 @app.route('/abr/show', methods=['GET'])
 def show_abr():
     return jsonify(to_dict_abr(root_abr))
+
+# --- NEW: Delete route ---
+@app.route('/abr/delete', methods=['POST'])
+def delete_value_abr():
+    global root_abr
+    value = request.json["value"]
+    
+    # Check if value exists in the tree
+    if not search_abr(root_abr, value):
+        return jsonify({"message": f"Value {value} does not exist in the tree", "success": False})
+    
+    # Delete the value
+    root_abr = delete_abr(root_abr, value)
+    return jsonify({
+        "message": f"Value {value} deleted successfully", 
+        "success": True,
+        "tree": to_dict_abr(root_abr)
+    })
+
+# --- NEW: Search route ---
+@app.route('/abr/search', methods=['POST'])
+def search_value_abr():
+    global root_abr
+    value = request.json["value"]
+    exists = search_abr(root_abr, value)
+    return jsonify({
+        "value": value,
+        "exists": exists,
+        "message": f"Value {value} {'exists' if exists else 'does not exist'} in the tree"
+    })
 
 
 
@@ -159,6 +241,13 @@ def rotate_left(x):
     return y
 
 
+def get_min_value_node(node):
+    current = node
+    while current.left is not None:
+        current = current.left
+    return current
+
+
 # --- AVL Insertion ---
 def insert_avl(node, value):
     if node is None:
@@ -186,6 +275,79 @@ def insert_avl(node, value):
         return rotate_left(node)
 
     return node
+
+
+# --- AVL Deletion ---
+def delete_avl(node, value):
+    global root_avl
+    
+    # Standard BST deletion
+    if node is None:
+        return node
+    
+    if value < node.value:
+        node.left = delete_avl(node.left, value)
+    elif value > node.value:
+        node.right = delete_avl(node.right, value)
+    else:
+        # Node with only one child or no child
+        if node.left is None:
+            temp = node.right
+            node = None
+            return temp
+        elif node.right is None:
+            temp = node.left
+            node = None
+            return temp
+        
+        # Node with two children: get the inorder successor
+        temp = get_min_value_node(node.right)
+        node.value = temp.value
+        node.right = delete_avl(node.right, temp.value)
+    
+    # If the tree had only one node then return
+    if node is None:
+        return node
+    
+    # Update height
+    node.height = 1 + max(get_height(node.left), get_height(node.right))
+    
+    # Get balance factor
+    balance = get_balance(node)
+    
+    # Balance the tree
+    # Left Left Case
+    if balance > 1 and get_balance(node.left) >= 0:
+        return rotate_right(node)
+    
+    # Left Right Case
+    if balance > 1 and get_balance(node.left) < 0:
+        node.left = rotate_left(node.left)
+        return rotate_right(node)
+    
+    # Right Right Case
+    if balance < -1 and get_balance(node.right) <= 0:
+        return rotate_left(node)
+    
+    # Right Left Case
+    if balance < -1 and get_balance(node.right) > 0:
+        node.right = rotate_right(node.right)
+        return rotate_left(node)
+    
+    return node
+
+
+# --- AVL Search ---
+def search_avl(node, value):
+    if node is None:
+        return False
+    
+    if value == node.value:
+        return True
+    elif value < node.value:
+        return search_avl(node.left, value)
+    else:
+        return search_avl(node.right, value)
 
 
 # --- Convert AVL to dict ---
@@ -264,6 +426,47 @@ def get_info_avl():
     return jsonify(info), 200
 
 
+@app.route('/avl/delete', methods=['POST'])
+def delete_value_avl():
+    global root_avl
+    data = request.get_json()
+    value = data.get('value')
+    
+    if root_avl is None:
+        return jsonify({"message": "No AVL tree to delete from", "success": False}), 400
+    
+    # Check if value exists
+    if not search_avl(root_avl, value):
+        return jsonify({"message": f"Value {value} does not exist in the tree", "success": False}), 404
+    
+    # Delete the value
+    root_avl = delete_avl(root_avl, value)
+    
+    return jsonify({
+        "message": f"Value {value} deleted successfully",
+        "success": True,
+        "tree": to_dict_avl(root_avl)
+    }), 200
+
+
+@app.route('/avl/search', methods=['POST'])
+def search_value_avl():
+    global root_avl
+    data = request.get_json()
+    value = data.get('value')
+    
+    if root_avl is None:
+        return jsonify({"message": "No AVL tree to search in", "exists": False}), 400
+    
+    exists = search_avl(root_avl, value)
+    
+    return jsonify({
+        "value": value,
+        "exists": exists,
+        "message": f"Value {value} {'exists' if exists else 'does not exist'} in the tree"
+    }), 200
+
+
 
 
 
@@ -285,6 +488,46 @@ class MinHeap:
         if index > 0 and self.heap[index] < self.heap[parent]:
             self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
             self._heapify_up(parent)
+    
+    def _heapify_down(self, index):
+        left = 2 * index + 1
+        right = 2 * index + 2
+        smallest = index
+        
+        if left < len(self.heap) and self.heap[left] < self.heap[smallest]:
+            smallest = left
+        if right < len(self.heap) and self.heap[right] < self.heap[smallest]:
+            smallest = right
+            
+        if smallest != index:
+            self.heap[index], self.heap[smallest] = self.heap[smallest], self.heap[index]
+            self._heapify_down(smallest)
+
+    def delete(self, value):
+        # Find the index of the value to delete
+        try:
+            index = self.heap.index(value)
+        except ValueError:
+            return False, f"Value {value} not found in the heap"
+        
+        # Replace the value to delete with the last element
+        last_index = len(self.heap) - 1
+        self.heap[index] = self.heap[last_index]
+        self.heap.pop()
+        
+        # If we removed the last element, we're done
+        if index < last_index:
+            # Check if we need to heapify up or down
+            parent = (index - 1) // 2
+            if index > 0 and self.heap[index] < self.heap[parent]:
+                self._heapify_up(index)
+            else:
+                self._heapify_down(index)
+        
+        return True, f"Value {value} deleted successfully"
+
+    def search(self, value):
+        return value in self.heap
 
     def _to_tree_dict(self, index=0):
         if index >= len(self.heap):
@@ -375,8 +618,41 @@ def get_info_tasmin():
     }
     return jsonify(info), 200
 
+# New routes for delete and search
+@app.route('/tasmin/delete', methods=['POST'])
+def delete_tasmin():
+    try:
+        value = request.json["value"]
+        success, message = heap.delete(value)
+        
+        if success:
+            return jsonify({
+                "message": message,
+                "tree": heap._to_tree_dict()
+            })
+        else:
+            return jsonify({"error": message}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
-
+@app.route('/tasmin/search', methods=['POST'])
+def search_tasmin():
+    try:
+        value = request.json["value"]
+        found = heap.search(value)
+        
+        if found:
+            return jsonify({
+                "found": True,
+                "message": f"Value {value} exists in the heap"
+            })
+        else:
+            return jsonify({
+                "found": False,
+                "message": f"Value {value} does not exist in the heap"
+            })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 
 # -------------------- TAS MAX (Max-Heap) --------------------
@@ -393,9 +669,47 @@ class MaxHeap:
 
     def _heapify_up(self, index):
         parent = (index - 1) // 2
-        if index > 0 and self.heap[index] > self.heap[parent]:  # Changed from < to >
+        if index > 0 and self.heap[index] > self.heap[parent]:
             self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
             self._heapify_up(parent)
+
+    def _heapify_down(self, index):
+        largest = index
+        left = 2 * index + 1
+        right = 2 * index + 2
+        
+        if left < len(self.heap) and self.heap[left] > self.heap[largest]:
+            largest = left
+            
+        if right < len(self.heap) and self.heap[right] > self.heap[largest]:
+            largest = right
+            
+        if largest != index:
+            self.heap[index], self.heap[largest] = self.heap[largest], self.heap[index]
+            self._heapify_down(largest)
+
+    def delete(self, value):
+        # Find the index of the value to delete
+        try:
+            index = self.heap.index(value)
+        except ValueError:
+            return False  # Value not found
+        
+        # Replace the value to delete with the last element
+        last_element = self.heap.pop()
+        if index < len(self.heap):
+            self.heap[index] = last_element
+            # Determine whether to heapify up or down
+            parent = (index - 1) // 2
+            if index > 0 and self.heap[index] > self.heap[parent]:
+                self._heapify_up(index)
+            else:
+                self._heapify_down(index)
+        
+        return True  # Deletion successful
+
+    def search(self, value):
+        return value in self.heap
 
     def _to_tree_dict(self, index=0):
         if index >= len(self.heap):
@@ -440,6 +754,31 @@ def insert_tasmax():
     value = request.json["value"]
     heap.insert(value)
     return jsonify(heap._to_tree_dict())
+
+@app.route("/tasmax/delete", methods=["POST"])
+def delete_tasmax():
+    value = request.json["value"]
+    success = heap.delete(value)
+    if success:
+        return jsonify({
+            "message": f"Value {value} deleted successfully!",
+            "tree": heap._to_tree_dict()
+        })
+    else:
+        return jsonify({
+            "message": f"Value {value} not found in the heap!",
+            "tree": heap._to_tree_dict()
+        }), 404
+
+@app.route("/tasmax/search", methods=["POST"])
+def search_tasmax():
+    value = request.json["value"]
+    found = heap.search(value)
+    return jsonify({
+        "value": value,
+        "found": found,
+        "message": f"Value {value} {'found' if found else 'not found'} in the heap!"
+    })
 
 @app.route("/tasmax/reset", methods=["POST"])
 def reset_tasmax():

@@ -7,6 +7,10 @@ const AVL = () => {
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteValue, setDeleteValue] = useState("");
+  const [searchValue, setSearchValue] = useState("");
+  const [searchResult, setSearchResult] = useState(null);
+  const [deleteMessage, setDeleteMessage] = useState(null);
 
   const fetchTree = async () => {
     try {
@@ -14,7 +18,7 @@ const AVL = () => {
       const data = await res.json();
       setTreeData(data);
     } catch (err) {
-      setError("Erreur lors du chargement de l’arbre");
+      setError("Erreur lors du chargement de l'arbre");
     }
   };
 
@@ -28,6 +32,55 @@ const AVL = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!deleteValue) {
+      setDeleteMessage("Veuillez entrer une valeur à supprimer");
+      return;
+    }
+    
+    try {
+      const res = await fetch("http://127.0.0.1:5000/avl/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ value: parseInt(deleteValue) }),
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setTreeData(data.tree);
+        setDeleteMessage(data.message);
+        // Refresh info after deletion
+        fetchInfo();
+      } else {
+        setDeleteMessage(data.message);
+      }
+    } catch (err) {
+      setDeleteMessage("Erreur lors de la suppression de la valeur");
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchValue) {
+      setSearchResult({ message: "Veuillez entrer une valeur à rechercher" });
+      return;
+    }
+    
+    try {
+      const res = await fetch("http://127.0.0.1:5000/avl/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ value: parseInt(searchValue) }),
+      });
+      const data = await res.json();
+      setSearchResult(data);
+    } catch (err) {
+      setSearchResult({ message: "Erreur lors de la recherche de la valeur" });
+    }
+  };
 
   useEffect(() => {
     Promise.all([fetchTree(), fetchInfo()]).finally(() => setLoading(false));
@@ -40,7 +93,7 @@ const AVL = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-green-50 p-6">
+    <div className="min-h-screen flex flex-col items-center bg-green-50 p-6">
       <NavBar />
       <HomePageOfTPOne />
       <h1 className="text-3xl font-bold text-green-700 mb-6">
@@ -51,34 +104,90 @@ const AVL = () => {
         onClick={handleRefresh}
         className="mb-6 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl shadow transition"
       >
-        Rafraîchir l’arbre
+        Rafraîchir l'arbre
       </button>
-      {/* ℹ️ Info Section */}
-          {info && (
-            <div className="bg-white p-4 rounded-xl shadow w-80 text-center">
-              <h2 className="text-2xl font-semibold text-green-700 mb-4">
-                Informations sur l’arbre
-              </h2>
-              <div className="space-y-2 text-gray-700">
-                <p>
-                  <strong>Hauteur :</strong> {info.height}
-                </p>
-                <p>
-                  <strong>Degré maximal :</strong> {info.degree}
-                </p>
-                <p>
-                  <strong>Densité :</strong> {info.density.toFixed(2)}
-                </p>
-              </div>
-            </div>
-          )}
+
+      {/* Delete Section */}
+      <div className="bg-white p-4 rounded-xl shadow w-80 mb-6">
+        <h2 className="text-xl font-semibold text-green-700 mb-4">
+          Supprimer une valeur
+        </h2>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={deleteValue}
+            onChange={(e) => setDeleteValue(e.target.value)}
+            className="flex-1 px-3 py-2 border border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            placeholder="Valeur à supprimer"
+          />
+          <button
+            onClick={handleDelete}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          >
+            Supprimer
+          </button>
+        </div>
+        {deleteMessage && (
+          <p className={`mt-2 text-sm ${deleteMessage.includes("n'existe pas") || deleteMessage.includes("Erreur") ? "text-red-500" : "text-green-600"}`}>
+            {deleteMessage}
+          </p>
+        )}
+      </div>
+
+      {/* Search Section */}
+      <div className="bg-white p-4 rounded-xl shadow w-80 mb-6">
+        <h2 className="text-xl font-semibold text-green-700 mb-4">
+          Rechercher une valeur
+        </h2>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            className="flex-1 px-3 py-2 border border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            placeholder="Valeur à rechercher"
+          />
+          <button
+            onClick={handleSearch}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Rechercher
+          </button>
+        </div>
+        {searchResult && (
+          <p className={`mt-2 text-sm ${searchResult.exists ? "text-green-600" : "text-red-500"}`}>
+            {searchResult.message}
+          </p>
+        )}
+      </div>
+
+      {/* Info Section */}
+      {info && (
+        <div className="bg-white p-4 rounded-xl shadow w-80 text-center mb-6">
+          <h2 className="text-2xl font-semibold text-green-700 mb-4">
+            Informations sur l'arbre
+          </h2>
+          <div className="space-y-2 text-gray-700">
+            <p>
+              <strong>Hauteur :</strong> {info.height}
+            </p>
+            <p>
+              <strong>Degré maximal :</strong> {info.degree}
+            </p>
+            <p>
+              <strong>Densité :</strong> {info.density.toFixed(2)}
+            </p>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <p className="text-gray-500">Chargement...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
         <>
-          {/*  Visual Tree Section */}
+          {/* Visual Tree Section */}
           {treeData ? (
             <div className="bg-white p-4 rounded-xl shadow w-full h-[500px] flex items-center justify-center mb-8">
               <Tree
