@@ -80,7 +80,7 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
             AVL
           </a>
         </button>
-
+{/* 
         <button onClick={() => handleUpload("tasmin")}>
           <a
             href="/tp1/tasmin"
@@ -88,7 +88,7 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
           >
             TASMIN
           </a>
-        </button>
+        </button> */}
 
         <button onClick={() => handleUpload("tasmax")}>
           <a
@@ -99,24 +99,24 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
           </a>
         </button>
         
-        <button onClick={() => handleUpload("amr")}>
+        {/* <button onClick={() => handleUpload("amr")}>
           <a
             href="/tp1/amr"
             className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
           >
             AMR
           </a>
-        </button>
-        
+        </button> */}
+{/*         
         <a
           href="/tp1/B_ARBER"
           className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
         >
           B_ARBER
         </a>
-      </div>
+      </div> */}
 
-      {/* Graph Section */}
+      {/* Graph Section
       <h2 className="text-3xl font-semibold text-green-700 mb-6 text-center">
         Les Graphes
       </h2>
@@ -145,8 +145,8 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
           className="px-6 py-3 bg-green-500 text-white rounded-2xl shadow-md hover:bg-green-600 transition-all duration-200"
         >
           Graphe non pondéré
-        </a>
-      </div>
+        </a>*/}
+      </div> 
     </div>
   );
 };

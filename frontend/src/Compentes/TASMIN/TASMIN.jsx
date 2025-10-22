@@ -13,15 +13,17 @@ const TASMIN = () => {
   const [searchResult, setSearchResult] = useState(null);
   const [deleteResult, setDeleteResult] = useState(null);
 
-  const fetchTree = async () => {
-    try {
-      const res = await fetch("http://127.0.0.1:5000/tasmin/show");
-      const data = await res.json();
-      setTreeData(data);
-    } catch (err) {
-      setError("Erreur lors du chargement de l'arbre");
-    }
-  };
+ const fetchTree = async () => {
+  try {
+    const res = await fetch("http://127.0.0.1:5000/tasmin/show");
+    const data = await res.json();
+    setTreeData(data);
+    setError(null);
+  } catch (err) {
+    setError("Erreur lors du chargement de l'arbre");
+    console.error(err);
+  }
+};
 
   const fetchInfo = async () => {
     try {
@@ -50,11 +52,13 @@ const handleDelete = async () => {
     const data = await response.json();
     
     if (response.ok) {
+      setDeleteResult({ success: true, message: data.message });
       // Force a complete refresh of the tree data
       await fetchTree();
-      setDeleteResult({ success: true, message: data.message });
       // Refresh info after deletion
       await fetchInfo();
+      // Clear the delete input
+      setDeleteValue("");
     } else {
       setDeleteResult({ success: false, message: data.error });
     }
@@ -103,7 +107,7 @@ const handleDelete = async () => {
   return (
     <div className="min-h-screen flex flex-col items-center bg-green-50 p-6">
       <NavBar />
-      <HomePageOfTPOne/>
+      {/* <HomePageOfTPOne/> */}
       <h1 className="text-3xl font-bold text-green-700 mb-6">
         TAS MIN
       </h1>

@@ -12,16 +12,19 @@ const ABR = () => {
   const [searchResult, setSearchResult] = useState(null);
   const [deleteResult, setDeleteResult] = useState(null);
 
+
+  // Calls Flask route /abr/show to get the current ABR tree.
   const fetchTree = async () => {
     try {
       const res = await fetch("http://127.0.0.1:5000/abr/show");
-      const data = await res.json();
-      setTreeData(data);
+      const data = await res.json(); // converts the JSON response into a JavaScript object.
+      setTreeData(data); // saves the tree structure into state.
     } catch (err) {
       setError("Erreur lors du chargement de l'arbre");
     }
   };
 
+  // Calls /abr/info for tree statistics (height, degree, density).
   const fetchInfo = async () => {
     try {
       const res = await fetch("http://127.0.0.1:5000/abr/info");
@@ -33,26 +36,25 @@ const ABR = () => {
   };
 
   useEffect(() => {
+    //Promise.all means both happen at the same time
     Promise.all([fetchTree(), fetchInfo()]).finally(() => setLoading(false));
   }, []);
 
   const handleRefresh = async () => {
-    setLoading(true);
-    await Promise.all([fetchTree(), fetchInfo()]);
-    setLoading(false);
+    setLoading(true); // It sets loading to true (to show loading spinner or message)
+    await Promise.all([fetchTree(), fetchInfo()]); // It reloads both the tree and its info.
+    setLoading(false); // Finally, it sets loading to false.
   };
 
-  // NEW: Handle search
   const handleSearch = async () => {
-    if (!searchValue) return;
-    
+    if (!searchValue) return; // If searchValue is empty, it stops (nothing to search).
     try {
-      const response = await fetch("http://127.0.0.1:5000/abr/search", {
+      const response = await fetch("http://127.0.0.1:5000/abr/search", { // Sends a POST request to /abr/search.
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ value: parseInt(searchValue) }),
+        body: JSON.stringify({ value: parseInt(searchValue) }), // Sends the value inside the body as JSON
       });
       const data = await response.json();
       setSearchResult(data);
@@ -195,7 +197,7 @@ const ABR = () => {
                 pathFunc="elbow"
                 styles={{
                   links: {
-                    stroke: "#16a34a", // green
+                    stroke: "#16a34a",
                     strokeWidth: 2,
                   },
                   nodes: {

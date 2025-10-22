@@ -1,8 +1,11 @@
 from flask import Flask, request, jsonify
+
+# CORS (Cross-Origin Resource Sharing) allows frontend (React, running on localhost:3000)
+# to communicate with this Flask backend (localhost:5000).
 from flask_cors import CORS
 
-app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+app = Flask(__name__) #Creates the Flask app
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}) # CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 # -------------------- ABR --------------------
 class NodeABR:
@@ -11,7 +14,7 @@ class NodeABR:
         self.left = None
         self.right = None
 
-root_abr = None
+root_abr = None # the tree is empty
 
 def insert_abr(node, value):
     if node is None:
@@ -22,7 +25,7 @@ def insert_abr(node, value):
         node.right = insert_abr(node.right, value)
     return node
 
-def to_dict_abr(node):
+def to_dict_abr(node): #Converts the ABR into a JSON-like dictionary (for React Tree visualization).
     if node is None:
         return None
     return {
@@ -54,7 +57,7 @@ def density_ABR(node):
     n = node_count_ABR(node)
     return n / h if h > 0 else 0
 
-# --- NEW: Search function ---
+# ---  Search function ---
 def search_abr(node, value):
     if node is None:
         return False
@@ -65,8 +68,8 @@ def search_abr(node, value):
     else:
         return search_abr(node.right, value)
 
-# --- NEW: Delete function ---
-def min_value_node(node):
+# ---  Delete function ---
+def min_value_node(node): # Finds the smallest value node (used when deleting a node with two children)
     current = node
     while current.left is not None:
         current = current.left
@@ -95,41 +98,41 @@ def delete_abr(node, value):
             temp = node.left
             node = None
             return temp
-        
+
         # Node with two children: Get the inorder successor
         temp = min_value_node(node.right)
-        
+
         # Copy the inorder successor's content to this node
         node.value = temp.value
-        
+
         # Delete the inorder successor
-        node.right = delete_abr(node.right, temp.value)
-    
+        node.right = delete_abr(node.right, temp.value) # Then delete value from right subtree ..... removes original value node.
+
     return node
 
 # --- Routes ---
 @app.route('/upload', methods=['POST'])
 def upload_file():
     global root_abr
-    file = request.files['file']
-    content = file.read().decode('utf-8')
+    file = request.files['file'] # Receives uploaded file from frontend.
+    content = file.read().decode('utf-8') # Reads and decodes it as text.
 
-    # 🧹 Step 1: Remove all brackets and commas
+    #  Step 1: Remove all brackets and commas
     cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
 
-    # 🧠 Step 2: Extract only numbers using regex
+    #  Step 2: Extract only numbers using regex
     import re
     all_numbers = re.findall(r'\d+', cleaned)
     all_numbers = [int(n) for n in all_numbers]
 
-    # ⚙️ Step 3: Skip every 3rd element (assuming pattern [[a,b][c]])
+    #  Step 3: Skip every 3rd element (assuming pattern [[a,b][c]])
     filtered = []
     for i in range(len(all_numbers)):
         # Skip every 3rd value
         if (i + 1) % 3 != 0:
             filtered.append(all_numbers[i])
 
-    # 🪴 Step 4: Build ABR with filtered values
+    #  Step 4: Build ABR with filtered values
     root_abr = None
     for v in filtered:
         root_abr = insert_abr(root_abr, v)
@@ -166,7 +169,7 @@ def get_info_abr():
 def show_abr():
     return jsonify(to_dict_abr(root_abr))
 
-# --- NEW: Delete route ---
+# ---  Delete route ---
 @app.route('/abr/delete', methods=['POST'])
 def delete_value_abr():
     global root_abr
@@ -179,12 +182,11 @@ def delete_value_abr():
     # Delete the value
     root_abr = delete_abr(root_abr, value)
     return jsonify({
-        "message": f"Value {value} deleted successfully", 
+        "message": f"Value {value} deleted successfully",
         "success": True,
         "tree": to_dict_abr(root_abr)
     })
 
-# --- NEW: Search route ---
 @app.route('/abr/search', methods=['POST'])
 def search_value_abr():
     global root_abr
@@ -466,195 +468,6 @@ def search_value_avl():
         "message": f"Value {value} {'exists' if exists else 'does not exist'} in the tree"
     }), 200
 
-
-
-
-
-
-# -------------------- TAS MIN (Min-Heap) --------------------
-class MinHeap:
-    def __init__(self):
-        self.heap = []
-
-    def insert(self, value):
-        self.heap.append(value)
-        self._heapify_up(len(self.heap) - 1)
-
-    def reset(self):
-        self.heap = []
-
-    def _heapify_up(self, index):
-        parent = (index - 1) // 2
-        if index > 0 and self.heap[index] < self.heap[parent]:
-            self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
-            self._heapify_up(parent)
-    
-    def _heapify_down(self, index):
-        left = 2 * index + 1
-        right = 2 * index + 2
-        smallest = index
-        
-        if left < len(self.heap) and self.heap[left] < self.heap[smallest]:
-            smallest = left
-        if right < len(self.heap) and self.heap[right] < self.heap[smallest]:
-            smallest = right
-            
-        if smallest != index:
-            self.heap[index], self.heap[smallest] = self.heap[smallest], self.heap[index]
-            self._heapify_down(smallest)
-
-    def delete(self, value):
-        # Find the index of the value to delete
-        try:
-            index = self.heap.index(value)
-        except ValueError:
-            return False, f"Value {value} not found in the heap"
-        
-        # Replace the value to delete with the last element
-        last_index = len(self.heap) - 1
-        self.heap[index] = self.heap[last_index]
-        self.heap.pop()
-        
-        # If we removed the last element, we're done
-        if index < last_index:
-            # Check if we need to heapify up or down
-            parent = (index - 1) // 2
-            if index > 0 and self.heap[index] < self.heap[parent]:
-                self._heapify_up(index)
-            else:
-                self._heapify_down(index)
-        
-        return True, f"Value {value} deleted successfully"
-
-    def search(self, value):
-        return value in self.heap
-
-    def _to_tree_dict(self, index=0):
-        if index >= len(self.heap):
-            return None
-        left = self._to_tree_dict(2 * index + 1)
-        right = self._to_tree_dict(2 * index + 2)
-        return {
-            "name": str(self.heap[index]),
-            "children": [c for c in [left, right] if c]
-        }
-
-    def tree_height(self, index=0):
-        if index >= len(self.heap):
-            return 0
-        return 1 + max(self.tree_height(2 * index + 1), self.tree_height(2 * index + 2))
-
-    def node_count(self):
-        return len(self.heap)
-
-    def max_degree(self, index=0):
-        if index >= len(self.heap):
-            return 0
-        degree = 0
-        if 2 * index + 1 < len(self.heap): degree += 1
-        if 2 * index + 2 < len(self.heap): degree += 1
-        return max(degree,
-                   self.max_degree(2 * index + 1),
-                   self.max_degree(2 * index + 2))
-
-    def density(self):
-        h = self.tree_height()
-        n = self.node_count()
-        return n / h if h > 0 else 0
-
-# Create a global instance of MinHeap
-heap = MinHeap()
-
-# --- Routes ---
-
-@app.route("/tasmin/insert", methods=["POST"])
-def insert_tasmin():
-    value = request.json["value"]
-    heap.insert(value)
-    return jsonify(heap._to_tree_dict())
-
-@app.route("/tasmin/reset", methods=["POST"])
-def reset_tasmin():
-    heap.reset()
-    return jsonify({"message": "TasMin reset!"})
-
-@app.route('/tasmin/upload', methods=['POST'])
-def upload_file_tasmin():
-    # Reset the heap before inserting new values
-    heap.reset()
-    
-    file = request.files['file']
-    content = file.read().decode('utf-8')
-
-    import re
-    cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
-    all_numbers = [int(n) for n in re.findall(r'\d+', cleaned)]
-
-    filtered = [n for i, n in enumerate(all_numbers) if (i + 1) % 3 != 0]
-
-    # Insert each value into the heap
-    for v in filtered:
-        heap.insert(v)
-
-    return jsonify({
-        'message': 'File uploaded and TASMIN built successfully!',
-        'values': filtered
-    })
-
-@app.route('/tasmin/show', methods=['GET'])
-def show_tasmin():
-    if not heap.heap:
-        return jsonify({"message": "No TASMIN tree yet"}), 200
-    return jsonify(heap._to_tree_dict()), 200
-
-@app.route('/tasmin/info', methods=['GET'])
-def get_info_tasmin():
-    if not heap.heap:
-        return jsonify({"height": 0, "degree": 0, "density": 0}), 200
-    info = {
-        "height": heap.tree_height(),
-        "degree": heap.max_degree(),
-        "density": heap.density()
-    }
-    return jsonify(info), 200
-
-# New routes for delete and search
-@app.route('/tasmin/delete', methods=['POST'])
-def delete_tasmin():
-    try:
-        value = request.json["value"]
-        success, message = heap.delete(value)
-        
-        if success:
-            return jsonify({
-                "message": message,
-                "tree": heap._to_tree_dict()
-            })
-        else:
-            return jsonify({"error": message}), 404
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-@app.route('/tasmin/search', methods=['POST'])
-def search_tasmin():
-    try:
-        value = request.json["value"]
-        found = heap.search(value)
-        
-        if found:
-            return jsonify({
-                "found": True,
-                "message": f"Value {value} exists in the heap"
-            })
-        else:
-            return jsonify({
-                "found": False,
-                "message": f"Value {value} does not exist in the heap"
-            })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-
 # -------------------- TAS MAX (Max-Heap) --------------------
 class MaxHeap:
     def __init__(self):
@@ -827,6 +640,200 @@ def get_info_tasmax():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
+
+# # -------------------- TAS MIN (Min-Heap) --------------------
+# class MinHeap:
+#     def __init__(self):
+#         self.heap = []
+
+#     def insert(self, value):
+#         self.heap.append(value)
+#         self._heapify_up(len(self.heap) - 1)
+
+#     def reset(self):
+#         self.heap = []
+
+#     def _heapify_up(self, index):
+#         parent = (index - 1) // 2
+#         if index > 0 and self.heap[index] < self.heap[parent]:
+#             self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
+#             self._heapify_up(parent)
+    
+#     def _heapify_down(self, index):
+#         left = 2 * index + 1
+#         right = 2 * index + 2
+#         smallest = index
+        
+#         if left < len(self.heap) and self.heap[left] < self.heap[smallest]:
+#             smallest = left
+#         if right < len(self.heap) and self.heap[right] < self.heap[smallest]:
+#             smallest = right
+            
+#         if smallest != index:
+#             self.heap[index], self.heap[smallest] = self.heap[smallest], self.heap[index]
+#             self._heapify_down(smallest)
+
+#     def delete(self, value):
+#         # Find the index of the value to delete
+#         try:
+#             index = self.heap.index(value)
+#         except ValueError:
+#             return False, f"Value {value} not found in the heap"
+        
+#         # Replace the value to delete with the last element
+#         last_index = len(self.heap) - 1
+#         self.heap[index] = self.heap[last_index]
+#         self.heap.pop()
+        
+#         # If we removed the last element, we're done
+#         if index < last_index:
+#             # Check if we need to heapify up or down
+#             parent = (index - 1) // 2
+#             if index > 0 and self.heap[index] < self.heap[parent]:
+#                 self._heapify_up(index)
+#             else:
+#                 self._heapify_down(index)
+        
+#         return True, f"Value {value} deleted successfully"
+
+#     def search(self, value):
+#         return value in self.heap
+
+#     def _to_tree_dict(self, index=0):
+#         if index >= len(self.heap):
+#             return None
+#         left = self._to_tree_dict(2 * index + 1)
+#         right = self._to_tree_dict(2 * index + 2)
+#         return {
+#             "name": str(self.heap[index]),
+#             "children": [c for c in [left, right] if c]
+#         }
+
+#     def tree_height(self, index=0):
+#         if index >= len(self.heap):
+#             return 0
+#         return 1 + max(self.tree_height(2 * index + 1), self.tree_height(2 * index + 2))
+
+#     def node_count(self):
+#         return len(self.heap)
+
+#     def max_degree(self, index=0):
+#         if index >= len(self.heap):
+#             return 0
+#         degree = 0
+#         if 2 * index + 1 < len(self.heap): degree += 1
+#         if 2 * index + 2 < len(self.heap): degree += 1
+#         return max(degree,
+#                    self.max_degree(2 * index + 1),
+#                    self.max_degree(2 * index + 2))
+
+#     def density(self):
+#         h = self.tree_height()
+#         n = self.node_count()
+#         return n / h if h > 0 else 0
+
+# # Create a global instance of MinHeap
+# heap = MinHeap()
+
+# # --- Routes ---
+
+# @app.route("/tasmin/insert", methods=["POST"])
+# def insert_tasmin():
+#     value = request.json["value"]
+#     heap.insert(value)
+#     return jsonify(heap._to_tree_dict())
+
+# @app.route("/tasmin/reset", methods=["POST"])
+# def reset_tasmin():
+#     heap.reset()
+#     return jsonify({"message": "TasMin reset!"})
+
+# @app.route('/tasmin/upload', methods=['POST'])
+# def upload_file_tasmin():
+#     # Reset the heap before inserting new values
+#     heap.reset()
+    
+#     file = request.files['file']
+#     content = file.read().decode('utf-8')
+
+#     import re
+#     cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
+#     all_numbers = [int(n) for n in re.findall(r'\d+', cleaned)]
+
+#     filtered = [n for i, n in enumerate(all_numbers) if (i + 1) % 3 != 0]
+
+#     # Insert each value into the heap
+#     for v in filtered:
+#         heap.insert(v)
+
+#     return jsonify({
+#         'message': 'File uploaded and TASMIN built successfully!',
+#         'values': filtered
+#     })
+
+# @app.route('/tasmin/show', methods=['GET'])
+# def show_tasmin():
+#     if not heap.heap:
+#         return jsonify({"message": "No TASMIN tree yet"}), 200
+#     return jsonify(heap._to_tree_dict()), 200
+
+# @app.route('/tasmin/info', methods=['GET'])
+# def get_info_tasmin():
+#     if not heap.heap:
+#         return jsonify({"height": 0, "degree": 0, "density": 0}), 200
+#     info = {
+#         "height": heap.tree_height(),
+#         "degree": heap.max_degree(),
+#         "density": heap.density()
+#     }
+#     return jsonify(info), 200
+
+# # New routes for delete and search
+# @app.route('/tasmin/delete', methods=['POST'])
+# def delete_tasmin():
+#     try:
+#         value = request.json["value"]
+#         success, message = heap.delete(value)
+        
+#         if success:
+#             return jsonify({
+#                 "message": message,
+#                 "tree": heap._to_tree_dict(),
+#                 "info": {
+#                     "height": heap.tree_height(),
+#                     "degree": heap.max_degree(),
+#                     "density": heap.density()
+#                 }
+#             })
+#         else:
+#             return jsonify({"error": message}), 404
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 400
+
+# @app.route('/tasmin/search', methods=['POST'])
+# def search_tasmin():
+#     try:
+#         value = request.json["value"]
+#         found = heap.search(value)
+        
+#         if found:
+#             return jsonify({
+#                 "found": True,
+#                 "message": f"Value {value} exists in the heap"
+#             })
+#         else:
+#             return jsonify({
+#                 "found": False,
+#                 "message": f"Value {value} does not exist in the heap"
+#             })
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 400
+
+
+
 
 
 
