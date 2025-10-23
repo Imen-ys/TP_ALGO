@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Network } from "vis-network/standalone";
-import { NavBar, HomePageOfTPOne } from "../index";
+import { NavBar, HomePageOfTPOne } from "../../index";
 
 const GrapheNonPondere = () => {
   const containerRef = useRef(null);

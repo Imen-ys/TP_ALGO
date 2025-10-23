@@ -1,6 +1,6 @@
 import { useState } from "react";
-
-const HomePageOfTPOne = ({ onUploadComplete }) => {
+import {NavBar} from '../../index';
+const HomePageOfTP3 = ({ onUploadComplete }) => {
   const [selectedFile, setSelectedFile] = useState(null);
 
   const handleFileChange = (e) => {
@@ -14,7 +14,7 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
     formData.append("file", selectedFile);
 
     const url =
-      type === "abr"
+    type === "abr"
         ? "http://127.0.0.1:5000/upload"
         : type === "avl"
         ? "http://127.0.0.1:5000/avl/upload"
@@ -22,8 +22,6 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
         ? "http://127.0.0.1:5000/tasmin/upload"
         : type === "tasmax"
         ? "http://127.0.0.1:5000/tasmax/upload"
-        : type === "amr"
-        ? "http://127.0.0.1:5000/amr/upload"
         : null;
 
     if (!url) return alert("Unknown type");
@@ -44,6 +42,8 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
   };
 
   return (
+    <>
+    <NavBar/>
     <div className="min-h-screen bg-green-50 flex flex-col items-center justify-center p-8">
       <div className="mb-8 flex flex-col items-center">
         <input
@@ -52,103 +52,66 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
           className="mb-3 border border-green-400 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
         />
         <button
-          onClick={() => handleUpload("abr")}
-          className="px-6 py-2 bg-green-700 text-white rounded-2xl shadow-md hover:bg-green-800 transition-all duration-200"
+            onClick={() => handleUpload("abr")}
+            className="px-6 py-2 bg-green-700 text-white rounded-2xl shadow-md hover:bg-green-800 transition-all duration-200"
         >
-          Upload File
+        Upload File
         </button>
-      </div>
+    </div>
 
-      <h1 className="text-4xl font-bold text-green-700 mb-6 text-center">
-        Les Arbres
+      <h1 className="text-4xl font-bold text-green-700 mb-12 text-center">
+        LES ALGORITHMES DE TRI
       </h1>
       <div className="flex flex-wrap gap-4 mb-12 justify-center">
         <button onClick={() => handleUpload("abr")}>
           <a
-            href="/tp1/abr"
+            href="/tp3/Triabr"
             className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
           >
-            ABR
+            Tri par ABR
           </a>
         </button>
 
         <button onClick={() => handleUpload("avl")}>
           <a
-            href="/tp1/avl"
+            href="/tp3/Triavl"
             className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
           >
-            AVL
+            Tri par AVL
           </a>
         </button>
-{/* 
+
         <button onClick={() => handleUpload("tasmin")}>
-          <a
-            href="/tp1/tasmin"
+        <a
+            href="/tp3/Tritasmin"
             className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
-          >
-            TASMIN
-          </a>
-        </button> */}
+        >
+            Tri par TASMIN
+        </a>
+        </button>
 
         <button onClick={() => handleUpload("tasmax")}>
           <a
-            href="/tp1/tasmax"
+            href="/tp3/Tritasmax"
             className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
           >
-            TASMAX
+            Tri par TASMAX
           </a>
         </button>
-        
-        {/* <button onClick={() => handleUpload("amr")}>
+
+        <button onClick={() => handleUpload("tasmax")}>
           <a
-            href="/tp1/amr"
+            href="/tp3/TriFusion"
             className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
           >
-            AMR
+            Tri par fusion
           </a>
-        </button> */}
-{/*         
-        <a
-          href="/tp1/B_ARBER"
-          className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
-        >
-          B_ARBER
-        </a>
-      </div> */}
+        </button>
 
-      {/* Graph Section
-      <h2 className="text-3xl font-semibold text-green-700 mb-6 text-center">
-        Les Graphes
-      </h2>
-
-      <div className="flex flex-wrap gap-4 justify-center">
-        <a
-          href="/tp1/graphe-oriente"
-          className="px-6 py-3 bg-green-500 text-white rounded-2xl shadow-md hover:bg-green-600 transition-all duration-200"
-        >
-          Graphe orienté
-        </a>
-        <a
-          href="/tp1/graphe-non-oriente"
-          className="px-6 py-3 bg-green-500 text-white rounded-2xl shadow-md hover:bg-green-600 transition-all duration-200"
-        >
-          Graphe non orienté
-        </a>
-        <a
-          href="/tp1/graphe-pondere"
-          className="px-6 py-3 bg-green-500 text-white rounded-2xl shadow-md hover:bg-green-600 transition-all duration-200"
-        >
-          Graphe pondéré
-        </a>
-        <a
-          href="/tp1/graphe-non-pondere"
-          className="px-6 py-3 bg-green-500 text-white rounded-2xl shadow-md hover:bg-green-600 transition-all duration-200"
-        >
-          Graphe non pondéré
-        </a>*/}
-      </div> 
+      </div>
     </div>
+    </>
   );
 };
 
-export default HomePageOfTPOne;
+export default HomePageOfTP3;

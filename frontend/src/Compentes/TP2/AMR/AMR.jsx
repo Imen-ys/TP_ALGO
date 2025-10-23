@@ -1,6 +1,6 @@
 import Tree from "react-d3-tree";
 import { useState } from "react";
-import { NavBar, HomePageOfTPOne } from "../index";
+import { NavBar, HomePageOfTPOne } from "../../index";
 
 const AMR = () => {
   const [order, setOrder] = useState("");

@@ -1,30 +1,33 @@
 import { useEffect, useState } from "react";
 import Tree from "react-d3-tree";
-import { NavBar, HomePageOfTPOne } from "../index";
+import { NavBar, HomePageOfTP2 } from "../../index";
 
-const TASMAX = () => {
+const ABR = () => {
   const [treeData, setTreeData] = useState(null);
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [deleteValue, setDeleteValue] = useState("");
   const [searchValue, setSearchValue] = useState("");
+  const [deleteValue, setDeleteValue] = useState("");
   const [searchResult, setSearchResult] = useState(null);
-  const [deleteMessage, setDeleteMessage] = useState(null);
+  const [deleteResult, setDeleteResult] = useState(null);
 
+
+  // Calls Flask route /abr/show to get the current ABR tree.
   const fetchTree = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:5000/tasmax/show");
-      const data = await res.json();
-      setTreeData(data);
+      const res = await fetch("http://127.0.0.1:5000/abr/show");
+      const data = await res.json(); // converts the JSON response into a JavaScript object.
+      setTreeData(data); // saves the tree structure into state.
     } catch (err) {
       setError("Erreur lors du chargement de l'arbre");
     }
   };
 
+  // Calls /abr/info for tree statistics (height, degree, density).
   const fetchInfo = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:5000/tasmax/info");
+      const res = await fetch("http://127.0.0.1:5000/abr/info");
       const data = await res.json();
       setInfo(data);
     } catch (err) {
@@ -32,67 +35,69 @@ const TASMAX = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!deleteValue) {
-      setDeleteMessage("Veuillez entrer une valeur à supprimer");
-      return;
+  useEffect(() => {
+    //Promise.all means both happen at the same time
+    Promise.all([fetchTree(), fetchInfo()]).finally(() => setLoading(false));
+  }, []);
+
+  const handleRefresh = async () => {
+    setLoading(true); // It sets loading to true (to show loading spinner or message)
+    await Promise.all([fetchTree(), fetchInfo()]); // It reloads both the tree and its info.
+    setLoading(false); // Finally, it sets loading to false.
+  };
+
+  const handleSearch = async () => {
+    if (!searchValue) return; // If searchValue is empty, it stops.
+    try {
+      const response = await fetch("http://127.0.0.1:5000/abr/search", { // Sends a POST request to /abr/search.
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ value: parseInt(searchValue) }), // Sends the value inside the body as JSON
+      });
+      const data = await response.json();
+      setSearchResult(data);
+    } catch (error) {
+      console.error("Error searching value:", error);
+      setSearchResult({ message: "Search failed", exists: false });
     }
+  };
+
+  // NEW: Handle delete
+  const handleDelete = async () => {
+    if (!deleteValue) return;
     
     try {
-      const res = await fetch("http://127.0.0.1:5000/tasmax/delete", {
+      const response = await fetch("http://127.0.0.1:5000/abr/delete", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ value: parseInt(deleteValue) }),
       });
-      const data = await res.json();
-      setDeleteMessage(data.message);
-      setTreeData(data.tree);
-      // Refresh info after deletion
-      fetchInfo();
-    } catch (err) {
-      setDeleteMessage("Erreur lors de la suppression de la valeur");
+      const data = await response.json();
+      setDeleteResult(data);
+      
+      // If deletion was successful, refresh the tree
+      if (data.success) {
+        await fetchTree();
+        await fetchInfo();
+      }
+    } catch (error) {
+      console.error("Error deleting value:", error);
+      setDeleteResult({ message: "Delete failed", success: false });
     }
-  };
-
-  const handleSearch = async () => {
-    if (!searchValue) {
-      setSearchResult({ found: false, message: "Veuillez entrer une valeur à rechercher" });
-      return;
-    }
-    
-    try {
-      const res = await fetch("http://127.0.0.1:5000/tasmax/search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ value: parseInt(searchValue) }),
-      });
-      const data = await res.json();
-      setSearchResult(data);
-    } catch (err) {
-      setSearchResult({ found: false, message: "Erreur lors de la recherche" });
-    }
-  };
-
-  useEffect(() => {
-    Promise.all([fetchTree(), fetchInfo()]).finally(() => setLoading(false));
-  }, []);
-
-  const handleRefresh = async () => {
-    setLoading(true);
-    await Promise.all([fetchTree(), fetchInfo()]);
-    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-green-50 p-6">
+    <>
       <NavBar />
-      <HomePageOfTPOne />
+      <HomePageOfTP2 />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-green-50 p-6">
+
       <h1 className="text-3xl font-bold text-green-700 mb-6">
-        TAS MAX
+        Arbre Binaire de Recherche (ABR)
       </h1>
 
       <button
@@ -102,63 +107,63 @@ const TASMAX = () => {
         Rafraîchir l'arbre
       </button>
 
-      {/* Delete Section */}
-      <div className="bg-white p-4 rounded-xl shadow w-80 mb-6">
-        <h2 className="text-xl font-semibold text-green-700 mb-4">
-          Supprimer une valeur
-        </h2>
-        <div className="flex space-x-2">
-          <input
-            type="number"
-            value={deleteValue}
-            onChange={(e) => setDeleteValue(e.target.value)}
-            className="flex-1 p-2 border border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            placeholder="Valeur à supprimer"
-          />
-          <button
-            onClick={handleDelete}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow transition"
-          >
-            Supprimer
-          </button>
-        </div>
-        {deleteMessage && (
-          <p className={`mt-2 ${deleteMessage.includes("not found") ? "text-red-500" : "text-green-600"}`}>
-            {deleteMessage}
-          </p>
-        )}
-      </div>
-
-      {/* Search Section */}
-      <div className="bg-white p-4 rounded-xl shadow w-80 mb-6">
+      {/* NEW: Search Section */}
+      <div className="bg-white p-4 rounded-xl shadow w-80 mb-4">
         <h2 className="text-xl font-semibold text-green-700 mb-4">
           Rechercher une valeur
         </h2>
-        <div className="flex space-x-2">
+        <div className="flex gap-2">
           <input
             type="number"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             className="flex-1 p-2 border border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            placeholder="Valeur à rechercher"
+            placeholder="Entrez une valeur"
           />
           <button
             onClick={handleSearch}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             Rechercher
           </button>
         </div>
         {searchResult && (
-          <p className={`mt-2 ${searchResult.found ? "text-green-600" : "text-red-500"}`}>
+          <div className={`mt-2 p-2 rounded ${searchResult.exists ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
             {searchResult.message}
-          </p>
+          </div>
+        )}
+      </div>
+
+      {/* NEW: Delete Section */}
+      <div className="bg-white p-4 rounded-xl shadow w-80 mb-4">
+        <h2 className="text-xl font-semibold text-green-700 mb-4">
+          Supprimer une valeur
+        </h2>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={deleteValue}
+            onChange={(e) => setDeleteValue(e.target.value)}
+            className="flex-1 p-2 border border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            placeholder="Entrez une valeur"
+          />
+          <button
+            onClick={handleDelete}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          >
+            Supprimer
+          </button>
+        </div>
+        {deleteResult && (
+          <div className={`mt-2 p-2 rounded ${deleteResult.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            {deleteResult.message}
+          </div>
         )}
       </div>
 
       {/* ℹ️ Info Section */}
       {info && (
-        <div className="bg-white p-4 rounded-xl shadow w-80 text-center mb-6">
+        <div className="bg-white p-4 rounded-xl shadow w-80 text-center mb-4">
           <h2 className="text-2xl font-semibold text-green-700 mb-4">
             Informations sur l'arbre
           </h2>
@@ -175,14 +180,14 @@ const TASMAX = () => {
           </div>
         </div>
       )}
-      
+
       {loading ? (
         <p className="text-gray-500">Chargement...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
         <>
-          {/*  Visual Tree Section */}
+          {/* Visual Tree Section */}
           {treeData ? (
             <div className="bg-white p-4 rounded-xl shadow w-full h-[500px] flex items-center justify-center mb-8">
               <Tree
@@ -194,7 +199,7 @@ const TASMAX = () => {
                 pathFunc="elbow"
                 styles={{
                   links: {
-                    stroke: "#16a34a", // green
+                    stroke: "#16a34a",
                     strokeWidth: 2,
                   },
                   nodes: {
@@ -224,7 +229,8 @@ const TASMAX = () => {
         </>
       )}
     </div>
+    </>
   );
 };
 
-export default TASMAX;
+export default ABR;

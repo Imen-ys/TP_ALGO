@@ -1,11 +1,162 @@
 from flask import Flask, request, jsonify
-
-# CORS (Cross-Origin Resource Sharing) allows frontend (React, running on localhost:3000)
-# to communicate with this Flask backend (localhost:5000).
 from flask_cors import CORS
 
-app = Flask(__name__) #Creates the Flask app
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}) # CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+
+# ------------------------------------------    TP1     -------------------------------------
+
+
+# ---------------- Graph orienté ----------------
+
+
+graph = {}
+
+# -------------------- Routes --------------------
+
+@app.route("/graphOr/add_node", methods=["POST"])
+def add_node():
+    data = request.json
+    node = data.get("node")
+    if node not in graph:
+        graph[node] = []
+    return jsonify({"graph": graph})
+
+@app.route("/graphOr/add_edge", methods=["POST"])
+def add_edge():
+    data = request.json
+    src = data.get("src")
+    dest = data.get("dest")
+
+    if src not in graph:
+        graph[src] = []
+    if dest not in graph:
+        graph[dest] = []
+
+    # Ajout arête orientée
+    graph[src].append(dest)
+    return jsonify({"graph": graph})
+
+@app.route("/graphOr/get", methods=["GET"])
+def get_graph():
+    return jsonify({"graph": graph})
+
+
+
+# Graphe pondéré représenté par dict : {sommet: [(dest, poids), ...]}
+graph = {}
+
+# ---------------- ROUTES ---------------- #
+
+@app.route("/graphpendere/add_node", methods=["POST"])
+def add_node_pondere():
+    data = request.json
+    node = data.get("node")
+    if node not in graph:
+        graph[node] = []
+    return jsonify({"graph": graph})
+
+@app.route("/graphpendere/add_edge", methods=["POST"])
+def add_edge_pondere():
+    data = request.json
+    src = data.get("src")
+    dest = data.get("dest")
+    weight = data.get("weight", 1)  # poids par défaut = 1
+
+    if src not in graph:
+        graph[src] = []
+    if dest not in graph:
+        graph[dest] = []
+
+    # Ajout arête pondérée
+    graph[src].append((dest, weight))
+    return jsonify({"graph": graph})
+
+@app.route("/graphpendere/get", methods=["GET"])
+def get_graph_pondere():
+    return jsonify({"graph": graph})
+# Graphe non pondéré représenté par dict : {sommet: [dest1, dest2, ...]}
+graph_nonpondere = {}
+
+@app.route("/graphnonpondere/add_node", methods=["POST"])
+def add_node_nonpondere():
+    data = request.json
+    node = data.get("node")
+    if node not in graph_nonpondere:
+        graph_nonpondere[node] = []
+    return jsonify({"graph": graph_nonpondere})
+
+@app.route("/graphnonpondere/add_edge", methods=["POST"])
+def add_edge_nonpondere():
+    data = request.json
+    src = data.get("src")
+    dest = data.get("dest")
+
+    if src not in graph_nonpondere:
+        graph_nonpondere[src] = []
+    if dest not in graph_nonpondere:
+        graph_nonpondere[dest] = []
+
+    graph_nonpondere[src].append(dest)
+    return jsonify({"graph": graph_nonpondere})
+
+@app.route("/graphnonpondere/get", methods=["GET"])
+def get_graph_nonpondere():
+    return jsonify({"graph": graph_nonpondere})
+
+
+
+graph = {}
+
+# -------------------- Routes --------------------
+
+#  Ajouter un sommet
+@app.route("/graphNonOr/add_node", methods=["POST"])
+def add_node_non_oriente():
+    data = request.json
+    node = data.get("node")
+    if node not in graph:
+        graph[node] = []
+    return jsonify({"graph": graph})
+
+#  Ajouter une arête (non orientée)
+@app.route("/graphNonOr/add_edge", methods=["POST"])
+def add_edge_non_oriente():
+    data = request.json
+    src = data.get("src")
+    dest = data.get("dest")
+
+    if src not in graph:
+        graph[src] = []
+    if dest not in graph:
+        graph[dest] = []
+
+    # Ajouter l'arête dans les deux sens
+    if dest not in graph[src]:
+        graph[src].append(dest)
+    if src not in graph[dest]:
+        graph[dest].append(src)
+
+    return jsonify({"graph": graph})
+
+#  Obtenir le graphe complet
+@app.route("/graphNonOr/get", methods=["GET"])
+def get_graph_non_oriente():
+    return jsonify({"graph": graph})
+
+#  Nombre de sommets
+@app.route("/graphNonOr/count_nodes", methods=["GET"])
+def count_nodes_non_oriente():
+    return jsonify({"count_nodes": len(graph)})
+
+#  Nombre d’arêtes
+@app.route("/graphNonOr/count_edges", methods=["GET"])
+def count_edges_non_oriente():
+    count = sum(len(v) for v in graph.values()) // 2
+    return jsonify({"count_edges": count})
+
+
+# ----------------------------------------------------- TP2  ----------------------------------------
 
 # -------------------- ABR --------------------
 class NodeABR:
@@ -128,9 +279,7 @@ def upload_file():
     #  Step 3: Skip every 3rd element (assuming pattern [[a,b][c]])
     filtered = []
     for i in range(len(all_numbers)):
-        # Skip every 3rd value
-        if (i + 1) % 3 != 0:
-            filtered.append(all_numbers[i])
+        filtered.append(all_numbers[i])
 
     #  Step 4: Build ABR with filtered values
     root_abr = None
@@ -282,11 +431,11 @@ def insert_avl(node, value):
 # --- AVL Deletion ---
 def delete_avl(node, value):
     global root_avl
-    
+
     # Standard BST deletion
     if node is None:
         return node
-    
+
     if value < node.value:
         node.left = delete_avl(node.left, value)
     elif value > node.value:
@@ -301,12 +450,12 @@ def delete_avl(node, value):
             temp = node.left
             node = None
             return temp
-        
+
         # Node with two children: get the inorder successor
         temp = get_min_value_node(node.right)
         node.value = temp.value
         node.right = delete_avl(node.right, temp.value)
-    
+
     # If the tree had only one node then return
     if node is None:
         return node
@@ -395,7 +544,7 @@ def upload_file_avl():
     cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
     all_numbers = [int(n) for n in re.findall(r'\d+', cleaned)]
 
-    filtered = [n for i, n in enumerate(all_numbers) if (i + 1) % 3 != 0]
+    filtered = [n for i, n in enumerate(all_numbers)]
 
     root_avl = None
     for v in filtered:
@@ -638,280 +787,261 @@ def get_info_tasmax():
     }
     return jsonify(info), 200
 
+
+# -------------------- TAS MIN (Min-Heap) --------------------
+class MinHeap:
+    def __init__(self):
+        self.heap = []
+
+    def insert(self, value):
+        self.heap.append(value)
+        self._heapify_up(len(self.heap) - 1)
+
+    def reset(self):
+        self.heap = []
+
+    def _heapify_up(self, index):
+        parent = (index - 1) // 2
+        if index > 0 and self.heap[index] < self.heap[parent]:  # Changed comparison
+            self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
+            self._heapify_up(parent)
+
+    def _heapify_down(self, index):
+        smallest = index  # Changed from 'largest' to 'smallest'
+        left = 2 * index + 1
+        right = 2 * index + 2
+        
+        if left < len(self.heap) and self.heap[left] < self.heap[smallest]:  # Changed comparison
+            smallest = left
+            
+        if right < len(self.heap) and self.heap[right] < self.heap[smallest]:  # Changed comparison
+            smallest = right
+            
+        if smallest != index:
+            self.heap[index], self.heap[smallest] = self.heap[smallest], self.heap[index]
+            self._heapify_down(smallest)  # Changed from 'largest' to 'smallest'
+
+    def delete(self, value):
+        # Find the index of the value to delete
+        try:
+            index = self.heap.index(value)
+        except ValueError:
+            return False  # Value not found
+        
+        # Replace the value to delete with the last element
+        last_element = self.heap.pop()
+        if index < len(self.heap):
+            self.heap[index] = last_element
+            # Determine whether to heapify up or down
+            parent = (index - 1) // 2
+            if index > 0 and self.heap[index] < self.heap[parent]:  # Changed comparison
+                self._heapify_up(index)
+            else:
+                self._heapify_down(index)
+        
+        return True  # Deletion successful
+
+    def search(self, value):
+        return value in self.heap
+
+    def _to_tree_dict(self, index=0):
+        if index >= len(self.heap):
+            return None
+        left = self._to_tree_dict(2 * index + 1)
+        right = self._to_tree_dict(2 * index + 2)
+        return {
+            "name": str(self.heap[index]),
+            "children": [c for c in [left, right] if c]
+        }
+
+    def tree_height(self, index=0):
+        if index >= len(self.heap):
+            return 0
+        return 1 + max(self.tree_height(2 * index + 1), self.tree_height(2 * index + 2))
+
+    def node_count(self):
+        return len(self.heap)
+
+    def max_degree(self, index=0):
+        if index >= len(self.heap):
+            return 0
+        degree = 0
+        if 2 * index + 1 < len(self.heap): degree += 1
+        if 2 * index + 2 < len(self.heap): degree += 1
+        return max(degree,
+                   self.max_degree(2 * index + 1),
+                   self.max_degree(2 * index + 2))
+
+    def density(self):
+        h = self.tree_height()
+        n = self.node_count()
+        return n / h if h > 0 else 0
+
+# Create a global instance of MinHeap
+heap = MinHeap()
+
+# --- Routes ---
+
+@app.route("/tasmin/insert", methods=["POST"])
+def insert_tasmin():
+    value = request.json["value"]
+    heap.insert(value)
+    return jsonify(heap._to_tree_dict())
+
+@app.route("/tasmin/delete", methods=["POST"])
+def delete_tasmin():
+    value = request.json["value"]
+    success = heap.delete(value)
+    if success:
+        return jsonify({
+            "message": f"Value {value} deleted successfully!",
+            "tree": heap._to_tree_dict()
+        })
+    else:
+        return jsonify({
+            "message": f"Value {value} not found in the heap!",
+            "tree": heap._to_tree_dict()
+        }), 404
+
+@app.route("/tasmin/search", methods=["POST"])
+def search_tasmin():
+    value = request.json["value"]
+    found = heap.search(value)
+    return jsonify({
+        "value": value,
+        "found": found,
+        "message": f"Value {value} {'found' if found else 'not found'} in the heap!"
+    })
+
+@app.route("/tasmin/reset", methods=["POST"])
+def reset_tasmin():
+    heap.reset()
+    return jsonify({"message": "TasMin reset!"})
+
+@app.route('/tasmin/upload', methods=['POST'])
+def upload_file_tasmin():
+    # Reset the heap before inserting new values
+    heap.reset()
+    
+    file = request.files['file']
+    content = file.read().decode('utf-8')
+
+    import re
+    cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
+    all_numbers = [int(n) for n in re.findall(r'\d+', cleaned)]
+
+    # filtered = [n for i, n in enumerate(all_numbers) if (i + 1) % 3 != 0]
+
+    # Insert each value into the heap
+    for v in all_numbers:
+        heap.insert(v)
+
+    return jsonify({
+        'message': 'File uploaded and TASMIN built successfully!',
+        'values': all_numbers
+    })
+
+@app.route('/tasmin/show', methods=['GET'])
+def show_tasmin():
+    if not heap.heap:
+        return jsonify({"message": "No TASMIN tree yet"}), 200
+    return jsonify(heap._to_tree_dict()), 200
+
+@app.route('/tasmin/info', methods=['GET'])
+def get_info_tasmin():
+    if not heap.heap:
+        return jsonify({"height": 0, "degree": 0, "density": 0}), 200
+    info = {
+        "height": heap.tree_height(),
+        "degree": heap.max_degree(),
+        "density": heap.density()
+    }
+    return jsonify(info), 200
+
+
+
+
+
+# --------------------------------- TP3 --------------------------------------
+
+# -------------------- Tri ABR --------------------
+
+import time
+
+def InOrder(node):
+    if node is None:
+        return []
+    return InOrder(node.left) + [node.value] + InOrder(node.right)
+
+
+@app.route("/TriABR", methods=["GET"])
+def tri_abr():
+
+    global root_abr
+
+    start_time = time.time()
+
+    if root_abr is None:
+        Time = round((time.time() - start_time) * 1000, 4)
+        return jsonify({"sorted_values": [], "execution_time_ms": Time})
+
+    values = InOrder(root_abr)
+
+    Time = round((time.time() - start_time) * 1000, 4)
+
+    return jsonify({
+        "sorted_values": values,
+        "execution_time_ms": Time
+    })
+
+
+@app.route('/TriABR/show', methods=['GET'])
+def show_tri_abr():
+    return tri_abr()
+
+
+
+
+# -------------------- Tri AVL --------------------
+
+def PostOrder(node):
+    if node is None:
+        return []
+    return PostOrder(node.right) + [node.value] + PostOrder(node.left)
+
+
+@app.route("/TriAVL", methods=["GET"])
+def tri_avl():
+
+    global root_avl
+
+    start_time = time.time()
+
+    if root_avl is None:
+        Time = round((time.time() - start_time) * 1000, 4)
+        return jsonify({"sorted_values": [], "execution_time_ms": Time})
+
+    values = PostOrder(root_avl)
+
+    Time = round((time.time() - start_time) * 1000, 4)
+
+    return jsonify({
+        "sorted_values": values,
+        "execution_time_ms": Time
+    })
+
+
+@app.route('/TriAVL/show', methods=['GET'])
+def show_tri_avl():
+    return tri_avl()
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
 
 
 
-# # -------------------- TAS MIN (Min-Heap) --------------------
-# class MinHeap:
-#     def __init__(self):
-#         self.heap = []
-
-#     def insert(self, value):
-#         self.heap.append(value)
-#         self._heapify_up(len(self.heap) - 1)
-
-#     def reset(self):
-#         self.heap = []
-
-#     def _heapify_up(self, index):
-#         parent = (index - 1) // 2
-#         if index > 0 and self.heap[index] < self.heap[parent]:
-#             self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
-#             self._heapify_up(parent)
-    
-#     def _heapify_down(self, index):
-#         left = 2 * index + 1
-#         right = 2 * index + 2
-#         smallest = index
-        
-#         if left < len(self.heap) and self.heap[left] < self.heap[smallest]:
-#             smallest = left
-#         if right < len(self.heap) and self.heap[right] < self.heap[smallest]:
-#             smallest = right
-            
-#         if smallest != index:
-#             self.heap[index], self.heap[smallest] = self.heap[smallest], self.heap[index]
-#             self._heapify_down(smallest)
-
-#     def delete(self, value):
-#         # Find the index of the value to delete
-#         try:
-#             index = self.heap.index(value)
-#         except ValueError:
-#             return False, f"Value {value} not found in the heap"
-        
-#         # Replace the value to delete with the last element
-#         last_index = len(self.heap) - 1
-#         self.heap[index] = self.heap[last_index]
-#         self.heap.pop()
-        
-#         # If we removed the last element, we're done
-#         if index < last_index:
-#             # Check if we need to heapify up or down
-#             parent = (index - 1) // 2
-#             if index > 0 and self.heap[index] < self.heap[parent]:
-#                 self._heapify_up(index)
-#             else:
-#                 self._heapify_down(index)
-        
-#         return True, f"Value {value} deleted successfully"
-
-#     def search(self, value):
-#         return value in self.heap
-
-#     def _to_tree_dict(self, index=0):
-#         if index >= len(self.heap):
-#             return None
-#         left = self._to_tree_dict(2 * index + 1)
-#         right = self._to_tree_dict(2 * index + 2)
-#         return {
-#             "name": str(self.heap[index]),
-#             "children": [c for c in [left, right] if c]
-#         }
-
-#     def tree_height(self, index=0):
-#         if index >= len(self.heap):
-#             return 0
-#         return 1 + max(self.tree_height(2 * index + 1), self.tree_height(2 * index + 2))
-
-#     def node_count(self):
-#         return len(self.heap)
-
-#     def max_degree(self, index=0):
-#         if index >= len(self.heap):
-#             return 0
-#         degree = 0
-#         if 2 * index + 1 < len(self.heap): degree += 1
-#         if 2 * index + 2 < len(self.heap): degree += 1
-#         return max(degree,
-#                    self.max_degree(2 * index + 1),
-#                    self.max_degree(2 * index + 2))
-
-#     def density(self):
-#         h = self.tree_height()
-#         n = self.node_count()
-#         return n / h if h > 0 else 0
-
-# # Create a global instance of MinHeap
-# heap = MinHeap()
-
-# # --- Routes ---
-
-# @app.route("/tasmin/insert", methods=["POST"])
-# def insert_tasmin():
-#     value = request.json["value"]
-#     heap.insert(value)
-#     return jsonify(heap._to_tree_dict())
-
-# @app.route("/tasmin/reset", methods=["POST"])
-# def reset_tasmin():
-#     heap.reset()
-#     return jsonify({"message": "TasMin reset!"})
-
-# @app.route('/tasmin/upload', methods=['POST'])
-# def upload_file_tasmin():
-#     # Reset the heap before inserting new values
-#     heap.reset()
-    
-#     file = request.files['file']
-#     content = file.read().decode('utf-8')
-
-#     import re
-#     cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
-#     all_numbers = [int(n) for n in re.findall(r'\d+', cleaned)]
-
-#     filtered = [n for i, n in enumerate(all_numbers) if (i + 1) % 3 != 0]
-
-#     # Insert each value into the heap
-#     for v in filtered:
-#         heap.insert(v)
-
-#     return jsonify({
-#         'message': 'File uploaded and TASMIN built successfully!',
-#         'values': filtered
-#     })
-
-# @app.route('/tasmin/show', methods=['GET'])
-# def show_tasmin():
-#     if not heap.heap:
-#         return jsonify({"message": "No TASMIN tree yet"}), 200
-#     return jsonify(heap._to_tree_dict()), 200
-
-# @app.route('/tasmin/info', methods=['GET'])
-# def get_info_tasmin():
-#     if not heap.heap:
-#         return jsonify({"height": 0, "degree": 0, "density": 0}), 200
-#     info = {
-#         "height": heap.tree_height(),
-#         "degree": heap.max_degree(),
-#         "density": heap.density()
-#     }
-#     return jsonify(info), 200
-
-# # New routes for delete and search
-# @app.route('/tasmin/delete', methods=['POST'])
-# def delete_tasmin():
-#     try:
-#         value = request.json["value"]
-#         success, message = heap.delete(value)
-        
-#         if success:
-#             return jsonify({
-#                 "message": message,
-#                 "tree": heap._to_tree_dict(),
-#                 "info": {
-#                     "height": heap.tree_height(),
-#                     "degree": heap.max_degree(),
-#                     "density": heap.density()
-#                 }
-#             })
-#         else:
-#             return jsonify({"error": message}), 404
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 400
-
-# @app.route('/tasmin/search', methods=['POST'])
-# def search_tasmin():
-#     try:
-#         value = request.json["value"]
-#         found = heap.search(value)
-        
-#         if found:
-#             return jsonify({
-#                 "found": True,
-#                 "message": f"Value {value} exists in the heap"
-#             })
-#         else:
-#             return jsonify({
-#                 "found": False,
-#                 "message": f"Value {value} does not exist in the heap"
-#             })
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 400
-
-
-
-
-
-
-
-# # -------------------- TAS MAX (Max-Heap) --------------------
-# class MaxHeap:
-#     def __init__(self):
-#         self.heap = []
-
-#     def insert(self, value):
-#         self.heap.append(value)
-#         self._heapify_up(len(self.heap) - 1)
-
-#     def reset(self):
-#         self.heap = []
-
-#     def _heapify_up(self, index):
-#         parent = (index - 1) // 2
-#         if index > 0 and self.heap[index] > self.heap[parent]:  # différence avec MinHeap
-#             self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
-#             self._heapify_up(parent)
-
-#     def _to_tree_dict(self, index=0):
-#         if index >= len(self.heap):
-#             return None
-#         left = self._to_tree_dict(2 * index + 1)
-#         right = self._to_tree_dict(2 * index + 2)
-#         return {
-#             "name": str(self.heap[index]),
-#             "children": [c for c in [left, right] if c]
-#         }
-
-#     # --- Fonctions info ---
-#     def height(self, index=0):
-#         if index >= len(self.heap):
-#             return 0
-#         return 1 + max(self.height(2 * index + 1), self.height(2 * index + 2))
-
-#     def node_count(self):
-#         return len(self.heap)
-
-#     def max_degree(self, index=0):
-#         if index >= len(self.heap):
-#             return 0
-#         degree = 0
-#         if 2 * index + 1 < len(self.heap): degree += 1
-#         if 2 * index + 2 < len(self.heap): degree += 1
-#         return max(degree,
-#                    self.max_degree(2 * index + 1),
-#                    self.max_degree(2 * index + 2))
-
-#     def density(self):
-#         h = self.height()
-#         n = self.node_count()
-#         return n / h if h > 0 else 0
-
-
-# heap_max = MaxHeap()
-
-# @app.route("/tasmax/insert", methods=["POST"])
-# def insert_tasmax():
-#     value = request.json["value"]
-#     heap_max.insert(value)
-#     return jsonify(heap_max._to_tree_dict())
-
-# @app.route("/tasmax/reset", methods=["POST"])
-# def reset_tasmax():
-#     heap_max.reset()
-#     return jsonify({"message": "TasMax reset!"})
-
-# @app.route("/tasmax/info", methods=["GET"])
-# def get_info_tasmax():
-#     info = {
-#         "height": heap_max.height(),
-#         "degree": heap_max.max_degree(),
-#         "density": heap_max.density(),
-#     }
-#     return jsonify(info)
 
 # # ---- AMR ----
 # class NodeAMR:
@@ -1259,153 +1389,7 @@ if __name__ == "__main__":
 
 
 
-# # ---------------- Graph orienté ----------------
 
-
-# graph = {}
-
-# # -------------------- Routes --------------------
-
-# @app.route("/graphOr/add_node", methods=["POST"])
-# def add_node():
-#     data = request.json
-#     node = data.get("node")
-#     if node not in graph:
-#         graph[node] = []
-#     return jsonify({"graph": graph})
-
-# @app.route("/graphOr/add_edge", methods=["POST"])
-# def add_edge():
-#     data = request.json
-#     src = data.get("src")
-#     dest = data.get("dest")
-
-#     if src not in graph:
-#         graph[src] = []
-#     if dest not in graph:
-#         graph[dest] = []
-
-#     # Ajout arête orientée
-#     graph[src].append(dest)
-#     return jsonify({"graph": graph})
-
-# @app.route("/graphOr/get", methods=["GET"])
-# def get_graph():
-#     return jsonify({"graph": graph})
-
-
-
-# # Graphe pondéré représenté par dict : {sommet: [(dest, poids), ...]}
-# graph = {}
-
-# # ---------------- ROUTES ---------------- #
-
-# @app.route("/graphpendere/add_node", methods=["POST"])
-# def add_node_pondere():
-#     data = request.json
-#     node = data.get("node")
-#     if node not in graph:
-#         graph[node] = []
-#     return jsonify({"graph": graph})
-
-# @app.route("/graphpendere/add_edge", methods=["POST"])
-# def add_edge_pondere():
-#     data = request.json
-#     src = data.get("src")
-#     dest = data.get("dest")
-#     weight = data.get("weight", 1)  # poids par défaut = 1
-
-#     if src not in graph:
-#         graph[src] = []
-#     if dest not in graph:
-#         graph[dest] = []
-
-#     # Ajout arête pondérée
-#     graph[src].append((dest, weight))
-#     return jsonify({"graph": graph})
-
-# @app.route("/graphpendere/get", methods=["GET"])
-# def get_graph_pondere():
-#     return jsonify({"graph": graph})
-# # Graphe non pondéré représenté par dict : {sommet: [dest1, dest2, ...]}
-# graph_nonpondere = {}
-
-# @app.route("/graphnonpondere/add_node", methods=["POST"])
-# def add_node_nonpondere():
-#     data = request.json
-#     node = data.get("node")
-#     if node not in graph_nonpondere:
-#         graph_nonpondere[node] = []
-#     return jsonify({"graph": graph_nonpondere})
-
-# @app.route("/graphnonpondere/add_edge", methods=["POST"])
-# def add_edge_nonpondere():
-#     data = request.json
-#     src = data.get("src")
-#     dest = data.get("dest")
-
-#     if src not in graph_nonpondere:
-#         graph_nonpondere[src] = []
-#     if dest not in graph_nonpondere:
-#         graph_nonpondere[dest] = []
-
-#     graph_nonpondere[src].append(dest)
-#     return jsonify({"graph": graph_nonpondere})
-
-# @app.route("/graphnonpondere/get", methods=["GET"])
-# def get_graph_nonpondere():
-#     return jsonify({"graph": graph_nonpondere})
-
-
-
-# graph = {}
-
-# # -------------------- Routes --------------------
-
-# #  Ajouter un sommet
-# @app.route("/graphNonOr/add_node", methods=["POST"])
-# def add_node_non_oriente():
-#     data = request.json
-#     node = data.get("node")
-#     if node not in graph:
-#         graph[node] = []
-#     return jsonify({"graph": graph})
-
-# #  Ajouter une arête (non orientée)
-# @app.route("/graphNonOr/add_edge", methods=["POST"])
-# def add_edge_non_oriente():
-#     data = request.json
-#     src = data.get("src")
-#     dest = data.get("dest")
-
-#     if src not in graph:
-#         graph[src] = []
-#     if dest not in graph:
-#         graph[dest] = []
-
-#     # Ajouter l'arête dans les deux sens
-#     if dest not in graph[src]:
-#         graph[src].append(dest)
-#     if src not in graph[dest]:
-#         graph[dest].append(src)
-
-#     return jsonify({"graph": graph})
-
-# #  Obtenir le graphe complet
-# @app.route("/graphNonOr/get", methods=["GET"])
-# def get_graph_non_oriente():
-#     return jsonify({"graph": graph})
-
-# #  Nombre de sommets
-# @app.route("/graphNonOr/count_nodes", methods=["GET"])
-# def count_nodes_non_oriente():
-#     return jsonify({"count_nodes": len(graph)})
-
-# #  Nombre d’arêtes
-# @app.route("/graphNonOr/count_edges", methods=["GET"])
-# def count_edges_non_oriente():
-#     count = sum(len(v) for v in graph.values()) // 2
-#     return jsonify({"count_edges": count})
 
 # # -------------------- Main --------------------
 # if __name__ == "__main__":

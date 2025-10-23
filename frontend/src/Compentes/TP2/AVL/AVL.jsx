@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Tree from "react-d3-tree";
-import { NavBar, HomePageOfTPOne } from "../index";
+import { NavBar, HomePageOfTP2 } from "../../index";
 
 const AVL = () => {
   const [treeData, setTreeData] = useState(null);
@@ -93,9 +93,11 @@ const AVL = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-green-50 p-6">
+    <>
       <NavBar />
-      <HomePageOfTPOne />
+      <HomePageOfTP2 />
+    <div className="min-h-screen flex flex-col items-center bg-green-50 p-6">
+
       <h1 className="text-3xl font-bold text-green-700 mb-6">
         AVL
       </h1>
@@ -229,6 +231,7 @@ const AVL = () => {
         </>
       )}
     </div>
+    </>
   );
 };
 
