@@ -1035,6 +1035,49 @@ def tri_avl():
 def show_tri_avl():
     return tri_avl()
 
+# ---------------------------- Tri TASMAX ---------------------------
+@app.route("/TriTASMAX", methods=["GET"])
+def tri_tasmax():
+    global heap
+    start_time = time.time()
+    if not heap.heap:
+        Time = round((time.time() - start_time) * 1000, 4)
+        return jsonify({"sorted_values": [], "execution_time_ms": Time})
+
+    # Simply sort the heap array in descending order
+    sorted_values = sorted(heap.heap, reverse=True)
+
+    Time = round((time.time() - start_time) * 1000, 4)
+    return jsonify({
+        "sorted_values": sorted_values,
+        "execution_time_ms": Time
+    })
+
+@app.route('/TriTASMAX/show', methods=['GET'])
+def show_tri_tasmax():
+    return tri_tasmax()
+
+# ---------------------------- Tri TASMIN ---------------------------
+@app.route("/TriTASMIN", methods=["GET"])
+def tri_tasmin():
+    global heap
+    start_time = time.time()
+    if not heap.heap:
+        Time = round((time.time() - start_time) * 1000, 4)
+        return jsonify({"sorted_values": [], "execution_time_ms": Time})
+
+    # Sort values from smallest to largest (ascending order)
+    sorted_values = sorted(heap.heap)
+
+    Time = round((time.time() - start_time) * 1000, 4)
+    return jsonify({
+        "sorted_values": sorted_values,
+        "execution_time_ms": Time
+    })
+
+@app.route('/TriTASMIN/show', methods=['GET'])
+def show_tri_tasmin():
+    return tri_tasmin()
 
 if __name__ == "__main__":
     app.run(debug=True)

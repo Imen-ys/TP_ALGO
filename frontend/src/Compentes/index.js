@@ -20,3 +20,5 @@ export {default as HomePageOfTP2} from "./TP2/HomePageOfTp2/HomePageOfTp2";
 export {default as HomePageOfTP3} from "./TP3/HomePageOfTp3/HomePageOfTp3";
 export {default as TriABR} from "./TP3/TriABR/TriABR";
 export {default as TriAVL} from "./TP3/TriAVL/TriAVL";
+export {default as TriTasMin} from "./TP3/TriTasMin/TriTasMin";
+export {default as TriTASMAX} from "./TP3/TriTasMax/TriTasMax";
