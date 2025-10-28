@@ -7,153 +7,209 @@ CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 # ------------------------------------------    TP1     -------------------------------------
 
 
-# ---------------- Graph orienté ----------------
+graph_non_oriente = {}  # Adjacency list
 
 
-graph = {}
-
-# -------------------- Routes --------------------
-
-@app.route("/graphOr/add_node", methods=["POST"])
-def add_node():
-    data = request.json
-    node = data.get("node")
-    if node not in graph:
-        graph[node] = []
-    return jsonify({"graph": graph})
-
-@app.route("/graphOr/add_edge", methods=["POST"])
-def add_edge():
-    data = request.json
-    src = data.get("src")
-    dest = data.get("dest")
-
-    if src not in graph:
-        graph[src] = []
-    if dest not in graph:
-        graph[dest] = []
-
-    # Ajout arête orientée
-    graph[src].append(dest)
-    return jsonify({"graph": graph})
-
-@app.route("/graphOr/get", methods=["GET"])
-def get_graph():
-    return jsonify({"graph": graph})
+def add_edge(graph, a, b):
+    """Add edge a—b to undirected graph"""
+    if a not in graph:
+        graph[a] = []
+    if b not in graph:
+        graph[b] = []
+    if b not in graph[a]:
+        graph[a].append(b)
+    if a not in graph[b]:
+        graph[b].append(a)
 
 
+@app.route("/grapheNonOriente/upload", methods=["POST"])
+def upload_file_non_oriente():
+    global graph_non_oriente
+    file = request.files["file"]
+    content = file.read().decode("utf-8")
 
-# Graphe pondéré représenté par dict : {sommet: [(dest, poids), ...]}
-graph = {}
+    # 1️⃣ Remove brackets and commas
+    cleaned = content.replace("[", " ").replace("]", " ").replace(",", " ")
 
-# ---------------- ROUTES ---------------- #
+    import re
+    # 2️⃣ Extract only numbers or "null"
+    all_values = re.findall(r'\b\d+\b', cleaned)  # Keep only numbers
 
-@app.route("/graphpendere/add_node", methods=["POST"])
-def add_node_pondere():
-    data = request.json
-    node = data.get("node")
-    if node not in graph:
-        graph[node] = []
-    return jsonify({"graph": graph})
+    # 3️⃣ We want pairs (a, b) — ignore every 3rd value
+    edges = []
+    i = 0
+    while i + 1 < len(all_values):
+        a = all_values[i]
+        b = all_values[i + 1]
+        edges.append((a, b))
+        i += 3  # skip 3rd value each time
 
-@app.route("/graphpendere/add_edge", methods=["POST"])
-def add_edge_pondere():
-    data = request.json
-    src = data.get("src")
-    dest = data.get("dest")
-    weight = data.get("weight", 1)  # poids par défaut = 1
+    # 4️⃣ Build undirected graph
+    graph_non_oriente = {}
+    for a, b in edges:
+        add_edge(graph_non_oriente, a, b)
 
-    if src not in graph:
-        graph[src] = []
-    if dest not in graph:
-        graph[dest] = []
-
-    # Ajout arête pondérée
-    graph[src].append((dest, weight))
-    return jsonify({"graph": graph})
-
-@app.route("/graphpendere/get", methods=["GET"])
-def get_graph_pondere():
-    return jsonify({"graph": graph})
-# Graphe non pondéré représenté par dict : {sommet: [dest1, dest2, ...]}
-graph_nonpondere = {}
-
-@app.route("/graphnonpondere/add_node", methods=["POST"])
-def add_node_nonpondere():
-    data = request.json
-    node = data.get("node")
-    if node not in graph_nonpondere:
-        graph_nonpondere[node] = []
-    return jsonify({"graph": graph_nonpondere})
-
-@app.route("/graphnonpondere/add_edge", methods=["POST"])
-def add_edge_nonpondere():
-    data = request.json
-    src = data.get("src")
-    dest = data.get("dest")
-
-    if src not in graph_nonpondere:
-        graph_nonpondere[src] = []
-    if dest not in graph_nonpondere:
-        graph_nonpondere[dest] = []
-
-    graph_nonpondere[src].append(dest)
-    return jsonify({"graph": graph_nonpondere})
-
-@app.route("/graphnonpondere/get", methods=["GET"])
-def get_graph_nonpondere():
-    return jsonify({"graph": graph_nonpondere})
+    return jsonify({
+        "message": "Graph Non Oriente uploaded successfully!",
+        "graph": graph_non_oriente
+    })
 
 
-
-graph = {}
-
-# -------------------- Routes --------------------
-
-#  Ajouter un sommet
-@app.route("/graphNonOr/add_node", methods=["POST"])
-def add_node_non_oriente():
-    data = request.json
-    node = data.get("node")
-    if node not in graph:
-        graph[node] = []
-    return jsonify({"graph": graph})
-
-#  Ajouter une arête (non orientée)
-@app.route("/graphNonOr/add_edge", methods=["POST"])
-def add_edge_non_oriente():
-    data = request.json
-    src = data.get("src")
-    dest = data.get("dest")
-
-    if src not in graph:
-        graph[src] = []
-    if dest not in graph:
-        graph[dest] = []
-
-    # Ajouter l'arête dans les deux sens
-    if dest not in graph[src]:
-        graph[src].append(dest)
-    if src not in graph[dest]:
-        graph[dest].append(src)
-
-    return jsonify({"graph": graph})
-
-#  Obtenir le graphe complet
-@app.route("/graphNonOr/get", methods=["GET"])
+@app.route("/grapheNonOriente/get", methods=["GET"])
 def get_graph_non_oriente():
-    return jsonify({"graph": graph})
+    return jsonify({"graph": graph_non_oriente})
 
-#  Nombre de sommets
-@app.route("/graphNonOr/count_nodes", methods=["GET"])
-def count_nodes_non_oriente():
-    return jsonify({"count_nodes": len(graph)})
 
-#  Nombre d’arêtes
-@app.route("/graphNonOr/count_edges", methods=["GET"])
-def count_edges_non_oriente():
-    count = sum(len(v) for v in graph.values()) // 2
-    return jsonify({"count_edges": count})
+
+
+
+# # ---------------- Graph orienté ----------------
+
+
+# graph = {}
+
+# # -------------------- Routes --------------------
+
+# @app.route("/graphOr/add_node", methods=["POST"])
+# def add_node():
+#     data = request.json
+#     node = data.get("node")
+#     if node not in graph:
+#         graph[node] = []
+#     return jsonify({"graph": graph})
+
+# @app.route("/graphOr/add_edge", methods=["POST"])
+# def add_edge():
+#     data = request.json
+#     src = data.get("src")
+#     dest = data.get("dest")
+
+#     if src not in graph:
+#         graph[src] = []
+#     if dest not in graph:
+#         graph[dest] = []
+
+#     # Ajout arête orientée
+#     graph[src].append(dest)
+#     return jsonify({"graph": graph})
+
+# @app.route("/graphOr/get", methods=["GET"])
+# def get_graph():
+#     return jsonify({"graph": graph})
+
+
+
+# # Graphe pondéré représenté par dict : {sommet: [(dest, poids), ...]}
+# graph = {}
+
+# # ---------------- ROUTES ---------------- #
+
+# @app.route("/graphpendere/add_node", methods=["POST"])
+# def add_node_pondere():
+#     data = request.json
+#     node = data.get("node")
+#     if node not in graph:
+#         graph[node] = []
+#     return jsonify({"graph": graph})
+
+# @app.route("/graphpendere/add_edge", methods=["POST"])
+# def add_edge_pondere():
+#     data = request.json
+#     src = data.get("src")
+#     dest = data.get("dest")
+#     weight = data.get("weight", 1)  # poids par défaut = 1
+
+#     if src not in graph:
+#         graph[src] = []
+#     if dest not in graph:
+#         graph[dest] = []
+
+#     # Ajout arête pondérée
+#     graph[src].append((dest, weight))
+#     return jsonify({"graph": graph})
+
+# @app.route("/graphpendere/get", methods=["GET"])
+# def get_graph_pondere():
+#     return jsonify({"graph": graph})
+# # Graphe non pondéré représenté par dict : {sommet: [dest1, dest2, ...]}
+# graph_nonpondere = {}
+
+# @app.route("/graphnonpondere/add_node", methods=["POST"])
+# def add_node_nonpondere():
+#     data = request.json
+#     node = data.get("node")
+#     if node not in graph_nonpondere:
+#         graph_nonpondere[node] = []
+#     return jsonify({"graph": graph_nonpondere})
+
+# @app.route("/graphnonpondere/add_edge", methods=["POST"])
+# def add_edge_nonpondere():
+#     data = request.json
+#     src = data.get("src")
+#     dest = data.get("dest")
+
+#     if src not in graph_nonpondere:
+#         graph_nonpondere[src] = []
+#     if dest not in graph_nonpondere:
+#         graph_nonpondere[dest] = []
+
+#     graph_nonpondere[src].append(dest)
+#     return jsonify({"graph": graph_nonpondere})
+
+# @app.route("/graphnonpondere/get", methods=["GET"])
+# def get_graph_nonpondere():
+#     return jsonify({"graph": graph_nonpondere})
+
+
+
+# graph = {}
+
+# # -------------------- Routes --------------------
+
+# #  Ajouter un sommet
+# @app.route("/graphNonOr/add_node", methods=["POST"])
+# def add_node_non_oriente():
+#     data = request.json
+#     node = data.get("node")
+#     if node not in graph:
+#         graph[node] = []
+#     return jsonify({"graph": graph})
+
+# #  Ajouter une arête (non orientée)
+# @app.route("/graphNonOr/add_edge", methods=["POST"])
+# def add_edge_non_oriente():
+#     data = request.json
+#     src = data.get("src")
+#     dest = data.get("dest")
+
+#     if src not in graph:
+#         graph[src] = []
+#     if dest not in graph:
+#         graph[dest] = []
+
+#     # Ajouter l'arête dans les deux sens
+#     if dest not in graph[src]:
+#         graph[src].append(dest)
+#     if src not in graph[dest]:
+#         graph[dest].append(src)
+
+#     return jsonify({"graph": graph})
+
+# #  Obtenir le graphe complet
+# @app.route("/graphNonOr/get", methods=["GET"])
+# def get_graph_non_oriente():
+#     return jsonify({"graph": graph})
+
+# #  Nombre de sommets
+# @app.route("/graphNonOr/count_nodes", methods=["GET"])
+# def count_nodes_non_oriente():
+#     return jsonify({"count_nodes": len(graph)})
+
+# #  Nombre d’arêtes
+# @app.route("/graphNonOr/count_edges", methods=["GET"])
+# def count_edges_non_oriente():
+#     count = sum(len(v) for v in graph.values()) // 2
+#     return jsonify({"count_edges": count})
 
 
 # ----------------------------------------------------- TP2  ----------------------------------------
