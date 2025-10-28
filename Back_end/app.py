@@ -7,8 +7,8 @@ CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 # ------------------------------------------    TP1     -------------------------------------
 
 
-graph_non_oriente = {}  # Adjacency list
-
+# --------------------------------- Graphe Non Oriente ----------------------------
+graph_non_oriente = {}
 
 def add_edge(graph, a, b):
     """Add edge a—b to undirected graph"""
@@ -32,19 +32,18 @@ def upload_file_non_oriente():
     cleaned = content.replace("[", " ").replace("]", " ").replace(",", " ")
 
     import re
-    # 2️⃣ Extract only numbers or "null"
-    all_values = re.findall(r'\b\d+\b', cleaned)  # Keep only numbers
 
-    # 3️⃣ We want pairs (a, b) — ignore every 3rd value
+    all_values = re.findall(r'\b[a-zA-Z0-9]+\b', cleaned)
+
     edges = []
     i = 0
     while i + 1 < len(all_values):
         a = all_values[i]
         b = all_values[i + 1]
         edges.append((a, b))
-        i += 3  # skip 3rd value each time
+        i += 3
 
-    # 4️⃣ Build undirected graph
+
     graph_non_oriente = {}
     for a, b in edges:
         add_edge(graph_non_oriente, a, b)
@@ -60,10 +59,105 @@ def get_graph_non_oriente():
     return jsonify({"graph": graph_non_oriente})
 
 
+# ---------------- Graph orienté ----------------
+graph_oriente = {}  # Dictionnaire d’adjacence (orienté)
+
+
+def add_edge_oriente(graph, a, b):
+    """Ajoute une arête orientée a → b dans le graphe"""
+    if a not in graph:
+        graph[a] = []
+    if b not in graph:
+        graph[b] = []
+    if b not in graph[a]:
+        graph[a].append(b)
+
+
+@app.route("/grapheOriente/upload", methods=["POST"])
+def upload_file_oriente():
+    global graph_oriente
+    file = request.files["file"]
+    content = file.read().decode("utf-8")
+
+    # 1️⃣ Nettoyage des caractères inutiles
+    cleaned = content.replace("[", " ").replace("]", " ").replace(",", " ")
+
+    import re
+    all_values = re.findall(r'\b[a-zA-Z0-9]+\b', cleaned)
+
+    edges = []
+    i = 0
+    while i + 1 < len(all_values):
+        a = all_values[i]
+        b = all_values[i + 1]
+        edges.append((a, b))
+        i += 2  # avance de 2 (car format a,b)
+
+    # Construction du graphe orienté
+    graph_oriente = {}
+    for a, b in edges:
+        add_edge_oriente(graph_oriente, a, b)
+
+    return jsonify({
+        "message": "Graph Orienté uploaded successfully!",
+        "graph": graph_oriente
+    })
+
+
+@app.route("/grapheOriente/get", methods=["GET"])
+def get_graph_oriente():
+    return jsonify({"graph": graph_oriente})
 
 
 
-# # ---------------- Graph orienté ----------------
+
+# ---------------- Graph  pondéré ----------------
+graph_pondere = {}  # Dictionnaire d’adjacence pondéré
+
+
+def add_edge_pondere(graph, a, b, poids):
+
+    if a not in graph:
+        graph[a] = []
+    if b not in graph:
+        graph[b] = []
+    graph[a].append((b, poids))
+
+
+@app.route("/graphePondere/upload", methods=["POST"])
+def upload_file_pondere():
+    global graph_pondere
+    file = request.files["file"]
+    content = file.read().decode("utf-8")
+
+    # Nettoyage
+    cleaned = content.replace("[", " ").replace("]", " ").replace(",", " ")
+    import re
+    all_values = re.findall(r"\b[a-zA-Z0-9]+\b", cleaned)
+
+    edges = []
+    i = 0
+    while i + 2 < len(all_values):
+        a = all_values[i]
+        b = all_values[i + 1]
+        poids = float(all_values[i + 2])  # poids peut être décimal
+        edges.append((a, b, poids))
+        i += 3  # avance de 3 (a, b, poids)
+
+    # Construction du graphe pondéré
+    graph_pondere = {}
+    for a, b, poids in edges:
+        add_edge_pondere(graph_pondere, a, b, poids)
+
+    return jsonify({
+        "message": "Graphe pondéré uploadé avec succès !",
+        "graph": graph_pondere
+    })
+
+
+@app.route("/graphePondere/get", methods=["GET"])
+def get_graph_pondere():
+    return jsonify({"graph": graph_pondere})
 
 
 # graph = {}

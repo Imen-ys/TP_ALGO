@@ -19,7 +19,7 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
         : type === "grapheOriente"
         ? "http://127.0.0.1:5000/grapheOriente/upload"
         : type === "grapheNonPondere"
-        ? "http://127.0.0.1:5000/grapheNonPondere/upload"
+        ? "http://127.0.0.1:5000/grapheOriente/upload"
         : type === "graphePondere"
         ? "http://127.0.0.1:5000/graphePondere/upload"
         : null;
@@ -66,7 +66,7 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
 
         <button onClick={() => handleUpload("grapheOriente")}>
           <a
-            href="/tp2/grapheOriente"
+            href="/tp1/graphe-oriente"
             className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
           >
             Graphe Oriente
@@ -84,7 +84,7 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
 
         <button onClick={() => handleUpload("grapheNonPondere")}>
         <a
-            href="/tp2/grapheNonPondere"
+            href="/tp1/graphe-non-pondere"
             className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
         >
             Graphe Non Pondere
@@ -93,7 +93,7 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
 
         <button onClick={() => handleUpload("graphePondere")}>
           <a
-            href="/tp2/graphePondere"
+            href="/tp1/graphe-pondere"
             className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
           >
             Graphe Pondere

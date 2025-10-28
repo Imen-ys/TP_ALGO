@@ -12,7 +12,6 @@ const GrapheNonOriente = () => {
     const data = await res.json();
     const graph = data.graph;
 
-    // Convert adjacency list → nodes + edges
     const nodes = Object.keys(graph).map((n) => ({ id: n, label: n }));
     const edges = [];
 

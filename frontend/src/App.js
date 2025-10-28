@@ -13,7 +13,6 @@ function App() {
     <div className="App">
         <Router>
           <Routes>
-            {/* <Route path='/' element={<NavBar/>}/> */}
             <Route path='/' element={<Home/>}/>
 
             <Route path='/tp1' element={<HomePageOfTPOne/>}/>
