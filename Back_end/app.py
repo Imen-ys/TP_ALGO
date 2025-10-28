@@ -1079,6 +1079,83 @@ def tri_tasmin():
 def show_tri_tasmin():
     return tri_tasmin()
 
+
+# ---------------------------------- Tri Fusion ---------------------------
+
+
+tabel = []
+
+
+def sorte_Fustion(tabel):
+    if len(tabel) > 1:
+        m = len(tabel) // 2
+        left = tabel[:m]
+        right = tabel[m:]
+
+        sorte_Fustion(left)
+        sorte_Fustion(right)
+
+        i, j, k = 0, 0, 0
+        while i < len(left) and j < len(right):
+            if left[i] < right[j]:
+                tabel[k] = left[i]
+                i += 1
+            else:
+                tabel[k] = right[j]
+                j += 1
+            k += 1
+
+        while i < len(left):
+            tabel[k] = left[i]
+            i += 1
+            k += 1
+
+        while j < len(right):
+            tabel[k] = right[j]
+            j += 1
+            k += 1
+
+
+@app.route('/fusion/upload', methods=['POST'])
+def upload_file_fusion():
+    global tabel
+    tabel = []  # reset before upload
+
+    file = request.files['file']
+    content = file.read().decode('utf-8')
+
+    import re
+    cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
+    all_numbers = [int(n) for n in re.findall(r'\d+', cleaned)]
+
+    tabel.extend(all_numbers)
+
+    return jsonify({
+        'message': 'File uploaded and Fusion built successfully!',
+        'values': all_numbers
+    })
+
+
+@app.route("/TriFusion", methods=["GET"])
+def tri_fusion():
+    global tabel
+    start_time = time.time()
+
+    sorte_Fustion(tabel)
+
+    execution_time = round((time.time() - start_time) * 1000, 4)
+
+    return jsonify({
+        'message': 'Tri Fusion completed successfully!',
+        'sorted_values': tabel,
+        'execution_time_ms': execution_time
+    })
+
+
+@app.route('/TriFusion/show', methods=['GET'])
+def show_tri_fusion():
+    return tri_fusion()
+
 if __name__ == "__main__":
     app.run(debug=True)
 

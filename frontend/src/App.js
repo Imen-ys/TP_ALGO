@@ -2,7 +2,7 @@ import {BrowserRouter as Router,Route,Routes} from 'react-router-dom'
 import './App.css';
 import {Home , ABR , AVL , TASMAX , TASMIN  , GrapheNonOr , GrapheOriente ,
   GraphePondere , GrapheNonPondere , HomePageOfTPOne , HomePageOfTP2 , HomePageOfTP3 , TriABR,
-  TriAVL , TriTASMAX , TriTasMin
+  TriAVL , TriTASMAX , TriTasMin , TriFusion
 
 
 } from './Compentes/index';
@@ -33,6 +33,7 @@ function App() {
             <Route path='/tp3/Triavl' element={<TriAVL/>}/>
             <Route path='/tp3/Tritasmax' element={<TriTASMAX/>}/>
             <Route path='/tp3/Tritasmin' element={<TriTasMin/>}/>
+            <Route path='/tp3/TriFusion' element={<TriFusion/>}/>
 
 
             {/*<Route path='/tp3' element={<h1>TP3 Page</h1>}/>

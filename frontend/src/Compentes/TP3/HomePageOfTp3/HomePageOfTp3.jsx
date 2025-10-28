@@ -22,6 +22,8 @@ const HomePageOfTP3 = ({ onUploadComplete }) => {
         ? "http://127.0.0.1:5000/tasmin/upload"
         : type === "tasmax"
         ? "http://127.0.0.1:5000/tasmax/upload"
+        : type === "fusion"
+        ? "http://127.0.0.1:5000/fusion/upload"
         : null;
 
     if (!url) return alert("Unknown type");
@@ -99,7 +101,7 @@ const HomePageOfTP3 = ({ onUploadComplete }) => {
           </a>
         </button>
 
-        <button onClick={() => handleUpload("tasmax")}>
+        <button onClick={() => handleUpload("fusion")}>
           <a
             href="/tp3/TriFusion"
             className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
