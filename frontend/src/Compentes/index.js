@@ -18,4 +18,4 @@ export {default as TriABR} from "./TP3/TriABR/TriABR";
 export {default as TriAVL} from "./TP3/TriAVL/TriAVL";
 export {default as TriTasMin} from "./TP3/TriTasMin/TriTasMin";
 export {default as TriTASMAX} from "./TP3/TriTasMax/TriTasMax";
-export {default as TriFusion} from "./TP3/TriFusion/TriFusion";
+export {default as TriBitonique} from "./TP3/TriBitonique/TriBitonique";

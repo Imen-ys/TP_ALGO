@@ -1,9 +1,13 @@
 {
     "cSpell.words": [
+        "bitonic",
+        "bitonique",
         "Graphe",
         "Graphepondere",
         "Pondere",
         "TASMAX",
-        "TASMIN"
+        "TASMIN",
+        "Tritasmax",
+        "Tritasmin"
     ]
 }

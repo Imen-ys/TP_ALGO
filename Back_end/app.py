@@ -60,11 +60,10 @@ def get_graph_non_oriente():
 
 
 # ---------------- Graph orienté ----------------
-graph_oriente = {}  # Dictionnaire d’adjacence (orienté)
+graph_oriente = {}
 
 
 def add_edge_oriente(graph, a, b):
-    """Ajoute une arête orientée a → b dans le graphe"""
     if a not in graph:
         graph[a] = []
     if b not in graph:
@@ -79,7 +78,6 @@ def upload_file_oriente():
     file = request.files["file"]
     content = file.read().decode("utf-8")
 
-    # 1️⃣ Nettoyage des caractères inutiles
     cleaned = content.replace("[", " ").replace("]", " ").replace(",", " ")
 
     import re
@@ -91,9 +89,8 @@ def upload_file_oriente():
         a = all_values[i]
         b = all_values[i + 1]
         edges.append((a, b))
-        i += 2  # avance de 2 (car format a,b)
+        i += 2
 
-    # Construction du graphe orienté
     graph_oriente = {}
     for a, b in edges:
         add_edge_oriente(graph_oriente, a, b)
@@ -112,8 +109,7 @@ def get_graph_oriente():
 
 
 # ---------------- Graph  pondéré ----------------
-graph_pondere = {}  # Dictionnaire d’adjacence pondéré
-
+graph_pondere = {}
 
 def add_edge_pondere(graph, a, b, poids):
 
@@ -130,7 +126,7 @@ def upload_file_pondere():
     file = request.files["file"]
     content = file.read().decode("utf-8")
 
-    # Nettoyage
+
     cleaned = content.replace("[", " ").replace("]", " ").replace(",", " ")
     import re
     all_values = re.findall(r"\b[a-zA-Z0-9]+\b", cleaned)
@@ -140,11 +136,10 @@ def upload_file_pondere():
     while i + 2 < len(all_values):
         a = all_values[i]
         b = all_values[i + 1]
-        poids = float(all_values[i + 2])  # poids peut être décimal
+        poids = float(all_values[i + 2])
         edges.append((a, b, poids))
-        i += 3  # avance de 3 (a, b, poids)
+        i += 3
 
-    # Construction du graphe pondéré
     graph_pondere = {}
     for a, b, poids in edges:
         add_edge_pondere(graph_pondere, a, b, poids)
@@ -160,150 +155,6 @@ def get_graph_pondere():
     return jsonify({"graph": graph_pondere})
 
 
-# graph = {}
-
-# # -------------------- Routes --------------------
-
-# @app.route("/graphOr/add_node", methods=["POST"])
-# def add_node():
-#     data = request.json
-#     node = data.get("node")
-#     if node not in graph:
-#         graph[node] = []
-#     return jsonify({"graph": graph})
-
-# @app.route("/graphOr/add_edge", methods=["POST"])
-# def add_edge():
-#     data = request.json
-#     src = data.get("src")
-#     dest = data.get("dest")
-
-#     if src not in graph:
-#         graph[src] = []
-#     if dest not in graph:
-#         graph[dest] = []
-
-#     # Ajout arête orientée
-#     graph[src].append(dest)
-#     return jsonify({"graph": graph})
-
-# @app.route("/graphOr/get", methods=["GET"])
-# def get_graph():
-#     return jsonify({"graph": graph})
-
-
-
-# # Graphe pondéré représenté par dict : {sommet: [(dest, poids), ...]}
-# graph = {}
-
-# # ---------------- ROUTES ---------------- #
-
-# @app.route("/graphpendere/add_node", methods=["POST"])
-# def add_node_pondere():
-#     data = request.json
-#     node = data.get("node")
-#     if node not in graph:
-#         graph[node] = []
-#     return jsonify({"graph": graph})
-
-# @app.route("/graphpendere/add_edge", methods=["POST"])
-# def add_edge_pondere():
-#     data = request.json
-#     src = data.get("src")
-#     dest = data.get("dest")
-#     weight = data.get("weight", 1)  # poids par défaut = 1
-
-#     if src not in graph:
-#         graph[src] = []
-#     if dest not in graph:
-#         graph[dest] = []
-
-#     # Ajout arête pondérée
-#     graph[src].append((dest, weight))
-#     return jsonify({"graph": graph})
-
-# @app.route("/graphpendere/get", methods=["GET"])
-# def get_graph_pondere():
-#     return jsonify({"graph": graph})
-# # Graphe non pondéré représenté par dict : {sommet: [dest1, dest2, ...]}
-# graph_nonpondere = {}
-
-# @app.route("/graphnonpondere/add_node", methods=["POST"])
-# def add_node_nonpondere():
-#     data = request.json
-#     node = data.get("node")
-#     if node not in graph_nonpondere:
-#         graph_nonpondere[node] = []
-#     return jsonify({"graph": graph_nonpondere})
-
-# @app.route("/graphnonpondere/add_edge", methods=["POST"])
-# def add_edge_nonpondere():
-#     data = request.json
-#     src = data.get("src")
-#     dest = data.get("dest")
-
-#     if src not in graph_nonpondere:
-#         graph_nonpondere[src] = []
-#     if dest not in graph_nonpondere:
-#         graph_nonpondere[dest] = []
-
-#     graph_nonpondere[src].append(dest)
-#     return jsonify({"graph": graph_nonpondere})
-
-# @app.route("/graphnonpondere/get", methods=["GET"])
-# def get_graph_nonpondere():
-#     return jsonify({"graph": graph_nonpondere})
-
-
-
-# graph = {}
-
-# # -------------------- Routes --------------------
-
-# #  Ajouter un sommet
-# @app.route("/graphNonOr/add_node", methods=["POST"])
-# def add_node_non_oriente():
-#     data = request.json
-#     node = data.get("node")
-#     if node not in graph:
-#         graph[node] = []
-#     return jsonify({"graph": graph})
-
-# #  Ajouter une arête (non orientée)
-# @app.route("/graphNonOr/add_edge", methods=["POST"])
-# def add_edge_non_oriente():
-#     data = request.json
-#     src = data.get("src")
-#     dest = data.get("dest")
-
-#     if src not in graph:
-#         graph[src] = []
-#     if dest not in graph:
-#         graph[dest] = []
-
-#     # Ajouter l'arête dans les deux sens
-#     if dest not in graph[src]:
-#         graph[src].append(dest)
-#     if src not in graph[dest]:
-#         graph[dest].append(src)
-
-#     return jsonify({"graph": graph})
-
-# #  Obtenir le graphe complet
-# @app.route("/graphNonOr/get", methods=["GET"])
-# def get_graph_non_oriente():
-#     return jsonify({"graph": graph})
-
-# #  Nombre de sommets
-# @app.route("/graphNonOr/count_nodes", methods=["GET"])
-# def count_nodes_non_oriente():
-#     return jsonify({"count_nodes": len(graph)})
-
-# #  Nombre d’arêtes
-# @app.route("/graphNonOr/count_edges", methods=["GET"])
-# def count_edges_non_oriente():
-#     count = sum(len(v) for v in graph.values()) // 2
-#     return jsonify({"count_edges": count})
 
 
 # ----------------------------------------------------- TP2  ----------------------------------------
@@ -315,7 +166,7 @@ class NodeABR:
         self.left = None
         self.right = None
 
-root_abr = None # the tree is empty
+root_abr = None
 
 def insert_abr(node, value):
     if node is None:
@@ -732,17 +583,17 @@ def delete_value_avl():
     global root_avl
     data = request.get_json()
     value = data.get('value')
-    
+
     if root_avl is None:
         return jsonify({"message": "No AVL tree to delete from", "success": False}), 400
-    
+
     # Check if value exists
     if not search_avl(root_avl, value):
         return jsonify({"message": f"Value {value} does not exist in the tree", "success": False}), 404
-    
+
     # Delete the value
     root_avl = delete_avl(root_avl, value)
-    
+
     return jsonify({
         "message": f"Value {value} deleted successfully",
         "success": True,
@@ -755,12 +606,12 @@ def search_value_avl():
     global root_avl
     data = request.get_json()
     value = data.get('value')
-    
+
     if root_avl is None:
         return jsonify({"message": "No AVL tree to search in", "exists": False}), 400
-    
+
     exists = search_avl(root_avl, value)
-    
+
     return jsonify({
         "value": value,
         "exists": exists,
@@ -781,24 +632,28 @@ class MaxHeap:
 
     def _heapify_up(self, index):
         parent = (index - 1) // 2
-        if index > 0 and self.heap[index] > self.heap[parent]:
+        while index > 0 and self.heap[index] > self.heap[parent]:
             self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
-            self._heapify_up(parent)
+            index = parent
+            parent = (index - 1) // 2
 
     def _heapify_down(self, index):
-        largest = index
-        left = 2 * index + 1
-        right = 2 * index + 2
-        
-        if left < len(self.heap) and self.heap[left] > self.heap[largest]:
-            largest = left
-            
-        if right < len(self.heap) and self.heap[right] > self.heap[largest]:
-            largest = right
-            
-        if largest != index:
+        size = len(self.heap)
+        while True:
+            largest = index
+            left = 2 * index + 1
+            right = 2 * index + 2
+
+            if left < size and self.heap[left] > self.heap[largest]:
+                largest = left
+            if right < size and self.heap[right] > self.heap[largest]:
+                largest = right
+
+            if largest == index:
+                break
+
             self.heap[index], self.heap[largest] = self.heap[largest], self.heap[index]
-            self._heapify_down(largest)
+            index = largest
 
     def delete(self, value):
         # Find the index of the value to delete
@@ -1115,7 +970,6 @@ def get_info_tasmin():
 # --------------------------------- TP3 --------------------------------------
 
 # -------------------- Tri ABR --------------------
-
 import time
 
 def InOrder(node):
@@ -1123,10 +977,33 @@ def InOrder(node):
         return []
     return InOrder(node.left) + [node.value] + InOrder(node.right)
 
+# Add these functions for animation
+def inorder_traversal_sequence_abr(node, sequence=None):
+    if sequence is None:
+        sequence = []
+    if node is None:
+        return sequence
+    inorder_traversal_sequence_abr(node.left, sequence)
+    sequence.append(node.value)
+    inorder_traversal_sequence_abr(node.right, sequence)
+    return sequence
 
+def to_dict_abr_with_highlight(node, highlight_value=None):
+    if node is None:
+        return None
+    is_highlighted = node.value == highlight_value
+    return {
+        "name": str(node.value),
+        "attributes": {
+            "highlight": is_highlighted
+        },
+        "children": [child for child in [to_dict_abr_with_highlight(node.left, highlight_value), 
+                                       to_dict_abr_with_highlight(node.right, highlight_value)] if child]
+    }
+
+# Keep your existing TriABR routes
 @app.route("/TriABR", methods=["GET"])
 def tri_abr():
-
     global root_abr
 
     start_time = time.time()
@@ -1144,21 +1021,70 @@ def tri_abr():
         "execution_time_ms": Time
     })
 
-
 @app.route('/TriABR/show', methods=['GET'])
 def show_tri_abr():
     return tri_abr()
 
+# Add these new routes for animation
+@app.route('/abr/traversal/sequence', methods=['GET'])
+def get_traversal_sequence_abr():
+    global root_abr
+    if root_abr is None:
+        return jsonify({"sequence": []}), 200
+    sequence = inorder_traversal_sequence_abr(root_abr)
+    return jsonify({"sequence": sequence}), 200
+
+@app.route('/abr/tree/highlight/<int:value>', methods=['GET'])
+def get_tree_with_highlight_abr(value):
+    global root_abr
+    if root_abr is None:
+        return jsonify({"message": "No ABR tree yet"}), 200
+    return jsonify(to_dict_abr_with_highlight(root_abr, value)), 200
 
 
 
 # -------------------- Tri AVL --------------------
 
-def PostOrder(node):
-    if node is None:
-        return []
-    return PostOrder(node.right) + [node.value] + PostOrder(node.left)
+# Add these functions to your AVL code
 
+def inorder_traversal_sequence(node, sequence=None):
+    if sequence is None:
+        sequence = []
+    if node is None:
+        return sequence
+    inorder_traversal_sequence(node.left, sequence)
+    sequence.append(node.value)
+    inorder_traversal_sequence(node.right, sequence)
+    return sequence
+
+def to_dict_avl_with_highlight(node, highlight_value=None):
+    if node is None:
+        return None
+    is_highlighted = node.value == highlight_value
+    return {
+        "name": str(node.value),
+        "attributes": {
+            "highlight": is_highlighted
+        },
+        "children": [child for child in [to_dict_avl_with_highlight(node.left, highlight_value),
+                                    to_dict_avl_with_highlight(node.right, highlight_value)] if child]
+    }
+
+# Add these new routes
+@app.route('/avl/traversal/sequence', methods=['GET'])
+def get_traversal_sequence():
+    global root_avl
+    if root_avl is None:
+        return jsonify({"sequence": []}), 200
+    sequence = inorder_traversal_sequence(root_avl)
+    return jsonify({"sequence": sequence}), 200
+
+@app.route('/avl/tree/highlight/<int:value>', methods=['GET'])
+def get_tree_with_highlight(value):
+    global root_avl
+    if root_avl is None:
+        return jsonify({"message": "No AVL tree yet"}), 200
+    return jsonify(to_dict_avl_with_highlight(root_avl, value)), 200
 
 @app.route("/TriAVL", methods=["GET"])
 def tri_avl():
@@ -1171,7 +1097,7 @@ def tri_avl():
         Time = round((time.time() - start_time) * 1000, 4)
         return jsonify({"sorted_values": [], "execution_time_ms": Time})
 
-    values = PostOrder(root_avl)
+    values = InOrder(root_avl)
 
     Time = round((time.time() - start_time) * 1000, 4)
 
@@ -1186,6 +1112,87 @@ def show_tri_avl():
     return tri_avl()
 
 # ---------------------------- Tri TASMAX ---------------------------
+# ---------------------------- Tri TASMAX ---------------------------
+import time
+
+# Fonction pour obtenir la structure du tas avec mise en évidence
+def max_heap_to_dict_with_highlight(heap, highlight_index=None):
+    if not heap:
+        return None
+    
+    def build_node(index):
+        if index >= len(heap):
+            return None
+        
+        left_index = 2 * index + 1
+        right_index = 2 * index + 2
+        
+        is_highlighted = index == highlight_index
+        
+        node = {
+            "name": str(heap[index]),
+            "attributes": {
+                "highlight": is_highlighted
+            }
+        }
+        
+        children = []
+        left_child = build_node(left_index)
+        right_child = build_node(right_index)
+        
+        if left_child:
+            children.append(left_child)
+        if right_child:
+            children.append(right_child)
+            
+        if children:
+            node["children"] = children
+            
+        return node
+    
+    return build_node(0)
+
+# Fonction pour obtenir la séquence d'extraction
+def get_max_extraction_sequence(heap):
+    if not heap:
+        return []
+    
+    # Créer une copie du tas pour ne pas modifier l'original
+    heap_copy = heap.copy()
+    sequence = []
+    
+    while heap_copy:
+        # Extraire le maximum (racine)
+        max_val = heap_copy[0]
+        sequence.append(max_val)
+        
+        # Remplacer la racine par le dernier élément
+        heap_copy[0] = heap_copy[-1]
+        heap_copy.pop()
+        
+        # Reconstituer le tas (max heapify)
+        if heap_copy:
+            max_heapify(heap_copy, 0)
+    
+    return sequence
+
+# Fonction max_heapify pour reconstituer le tas maximum
+def max_heapify(heap, i):
+    n = len(heap)
+    largest = i
+    left = 2 * i + 1
+    right = 2 * i + 2
+    
+    if left < n and heap[left] > heap[largest]:
+        largest = left
+    
+    if right < n and heap[right] > heap[largest]:
+        largest = right
+    
+    if largest != i:
+        heap[i], heap[largest] = heap[largest], heap[i]
+        max_heapify(heap, largest)
+
 @app.route("/TriTASMAX", methods=["GET"])
 def tri_tasmax():
     global heap
@@ -1194,7 +1201,7 @@ def tri_tasmax():
         Time = round((time.time() - start_time) * 1000, 4)
         return jsonify({"sorted_values": [], "execution_time_ms": Time})
 
-    # Simply sort the heap array in descending order
+    # Sort values from largest to smallest (descending order)
     sorted_values = sorted(heap.heap, reverse=True)
 
     Time = round((time.time() - start_time) * 1000, 4)
@@ -1207,7 +1214,123 @@ def tri_tasmax():
 def show_tri_tasmax():
     return tri_tasmax()
 
+# Nouvelles routes pour l'animation
+@app.route('/tasmax/extraction/sequence', methods=['GET'])
+def get_max_extraction_sequence_route():
+    global heap
+    if not heap.heap:
+        return jsonify({"sequence": []}), 200
+    sequence = get_max_extraction_sequence(heap.heap)
+    return jsonify({"sequence": sequence}), 200
+
+@app.route('/tasmax/heap/step/<int:step>', methods=['GET'])
+def get_max_heap_at_step(step):
+    global heap
+    if not heap.heap:
+        return jsonify({"message": "No heap yet"}), 200
+    
+    # Créer une copie du tas pour simuler l'état à l'étape donnée
+    heap_copy = heap.heap.copy()
+    
+    # Simuler l'extraction jusqu'à l'étape donnée
+    for i in range(step):
+        if not heap_copy:
+            break
+        
+        # Extraire le maximum (racine)
+        heap_copy[0] = heap_copy[-1]
+        heap_copy.pop()
+        
+        # Reconstituer le tas maximum
+        if heap_copy:
+            max_heapify(heap_copy, 0)
+    
+    # Déterminer quel élément sera extrait à l'étape suivante
+    highlight_index = 0 if heap_copy else None
+    
+    return jsonify(max_heap_to_dict_with_highlight(heap_copy, highlight_index)), 200
+
 # ---------------------------- Tri TASMIN ---------------------------
+import time
+
+# Fonction pour obtenir la structure du tas avec mise en évidence
+def heap_to_dict_with_highlight(heap, highlight_index=None):
+    if not heap:
+        return None
+    
+    def build_node(index):
+        if index >= len(heap):
+            return None
+        
+        left_index = 2 * index + 1
+        right_index = 2 * index + 2
+        
+        is_highlighted = index == highlight_index
+        
+        node = {
+            "name": str(heap[index]),
+            "attributes": {
+                "highlight": is_highlighted
+            }
+        }
+        
+        children = []
+        left_child = build_node(left_index)
+        right_child = build_node(right_index)
+        
+        if left_child:
+            children.append(left_child)
+        if right_child:
+            children.append(right_child)
+            
+        if children:
+            node["children"] = children
+            
+        return node
+    
+    return build_node(0)
+
+# Fonction pour obtenir la séquence d'extraction
+def get_extraction_sequence(heap):
+    if not heap:
+        return []
+    
+    # Créer une copie du tas pour ne pas modifier l'original
+    heap_copy = heap.copy()
+    sequence = []
+    
+    while heap_copy:
+        # Extraire le minimum (racine)
+        min_val = heap_copy[0]
+        sequence.append(min_val)
+        
+        # Remplacer la racine par le dernier élément
+        heap_copy[0] = heap_copy[-1]
+        heap_copy.pop()
+        
+        # Reconstituer le tas (heapify)
+        if heap_copy:
+            heapify(heap_copy, 0)
+    
+    return sequence
+
+# Fonction heapify pour reconstituer le tas
+def heapify(heap, i):
+    n = len(heap)
+    smallest = i
+    left = 2 * i + 1
+    right = 2 * i + 2
+    
+    if left < n and heap[left] < heap[smallest]:
+        smallest = left
+    
+    if right < n and heap[right] < heap[smallest]:
+        smallest = right
+    
+    if smallest != i:
+        heap[i], heap[smallest] = heap[smallest], heap[i]
+        heapify(heap, smallest)
+
 @app.route("/TriTASMIN", methods=["GET"])
 def tri_tasmin():
     global heap
@@ -1229,82 +1352,108 @@ def tri_tasmin():
 def show_tri_tasmin():
     return tri_tasmin()
 
+# Nouvelles routes pour l'animation
+@app.route('/tasmin/extraction/sequence', methods=['GET'])
+def get_extraction_sequence_route():
+    global heap
+    if not heap.heap:
+        return jsonify({"sequence": []}), 200
+    sequence = get_extraction_sequence(heap.heap)
+    return jsonify({"sequence": sequence}), 200
 
-# ---------------------------------- Tri Fusion ---------------------------
+@app.route('/tasmin/heap/step/<int:step>', methods=['GET'])
+def get_heap_at_step(step):
+    global heap
+    if not heap.heap:
+        return jsonify({"message": "No heap yet"}), 200
+    
+    # Créer une copie du tas pour simuler l'état à l'étape donnée
+    heap_copy = heap.heap.copy()
+    
+    # Simuler l'extraction jusqu'à l'étape donnée
+    for i in range(step):
+        if not heap_copy:
+            break
+        
+        # Extraire le minimum (racine)
+        heap_copy[0] = heap_copy[-1]
+        heap_copy.pop()
+        
+        # Reconstituer le tas
+        if heap_copy:
+            heapify(heap_copy, 0)
+    
+    # Déterminer quel élément sera extrait à l'étape suivante
+    highlight_index = 0 if heap_copy else None
+    
+    return jsonify(heap_to_dict_with_highlight(heap_copy, highlight_index)), 200
 
 
-tabel = []
 
 
-def sorte_Fustion(tabel):
-    if len(tabel) > 1:
-        m = len(tabel) // 2
-        left = tabel[:m]
-        right = tabel[m:]
+# ---------------------------------- Tri Bitonique ---------------------------
+steps = []
 
-        sorte_Fustion(left)
-        sorte_Fustion(right)
+def compare_and_swap(arr, low, cnt, direction):
+    """A helper function to compare and swap elements."""
+    if cnt > 1:
+        k = cnt // 2
+        for i in range(low, low + k):
+            if (direction == 1 and arr[i] > arr[i + k]) or \
+                (direction == 0 and arr[i] < arr[i + k]):
+                arr[i], arr[i + k] = arr[i + k], arr[i]
+                # Record the state after each swap
+                steps.append(list(arr))
 
-        i, j, k = 0, 0, 0
-        while i < len(left) and j < len(right):
-            if left[i] < right[j]:
-                tabel[k] = left[i]
-                i += 1
-            else:
-                tabel[k] = right[j]
-                j += 1
-            k += 1
+def bitonic_merge(arr, low, cnt, direction):
+    """Recursively sorts a bitonic sequence."""
+    if cnt > 1:
+        k = cnt // 2
+        compare_and_swap(arr, low, cnt, direction)
+        bitonic_merge(arr, low, k, direction)
+        bitonic_merge(arr, low + k, k, direction)
 
-        while i < len(left):
-            tabel[k] = left[i]
-            i += 1
-            k += 1
-
-        while j < len(right):
-            tabel[k] = right[j]
-            j += 1
-            k += 1
-
-
-@app.route('/fusion/upload', methods=['POST'])
-def upload_file_fusion():
-    global tabel
-    tabel = []  # reset before upload
-
+def bitonic_sort_recursive(arr, low, cnt, direction):
+    """The main recursive function to generate a bitonic sequence and then sort it."""
+    if cnt > 1:
+        k = cnt // 2
+        bitonic_sort_recursive(arr, low, k, 1) # Sort in ascending order
+        bitonic_sort_recursive(arr, low + k, k, 0) # Sort in descending order
+        bitonic_merge(arr, low, cnt, direction) # Merge the whole sequence
+import re
+@app.route('/bitonique/upload', methods=['POST'])
+def upload_and_sort():
+    global steps
+    steps = [] # Reset steps for each new request
+    
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    
     file = request.files['file']
-    content = file.read().decode('utf-8')
+    
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
 
-    import re
-    cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
-    all_numbers = [int(n) for n in re.findall(r'\d+', cleaned)]
+    if file:
+        try:
+            content = file.read().decode('utf-8')
+            numbers = list(map(int, re.findall(r'-?\d+', content)))
+            
+            if not numbers:
+                return jsonify({"error": "No numbers found in file"}), 400
 
-    tabel.extend(all_numbers)
+            # Add the initial state as the first step
+            steps.append(list(numbers))
+            
+            # Perform the bitonic sort and record steps
+            bitonic_sort_recursive(numbers, 0, len(numbers), 1) # 1 for ascending sort
+            
+            return jsonify({"steps": steps})
 
-    return jsonify({
-        'message': 'File uploaded and Fusion built successfully!',
-        'values': all_numbers
-    })
-
-
-@app.route("/TriFusion", methods=["GET"])
-def tri_fusion():
-    global tabel
-    start_time = time.time()
-
-    sorte_Fustion(tabel)
-
-    execution_time = round((time.time() - start_time) * 1000, 4)
-
-    return jsonify({
-        'message': 'Tri Fusion completed successfully!',
-        'sorted_values': tabel,
-        'execution_time_ms': execution_time
-    })
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
 
-@app.route('/TriFusion/show', methods=['GET'])
-def show_tri_fusion():
-    return tri_fusion()
 
 if __name__ == "__main__":
     app.run(debug=True)

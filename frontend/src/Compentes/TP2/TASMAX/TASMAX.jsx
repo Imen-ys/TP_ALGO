@@ -104,7 +104,6 @@ const TASMAX = () => {
         Rafraîchir l'arbre
       </button>
 
-      {/* Delete Section */}
       <div className="bg-white p-4 rounded-xl shadow w-80 mb-6">
         <h2 className="text-xl font-semibold text-green-700 mb-4">
           Supprimer une valeur
@@ -131,7 +130,6 @@ const TASMAX = () => {
         )}
       </div>
 
-      {/* Search Section */}
       <div className="bg-white p-4 rounded-xl shadow w-80 mb-6">
         <h2 className="text-xl font-semibold text-green-700 mb-4">
           Rechercher une valeur
@@ -158,7 +156,6 @@ const TASMAX = () => {
         )}
       </div>
 
-      {/* ℹ️ Info Section */}
       {info && (
         <div className="bg-white p-4 rounded-xl shadow w-80 text-center mb-6">
           <h2 className="text-2xl font-semibold text-green-700 mb-4">
