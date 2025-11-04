@@ -13,7 +13,6 @@ const TriABR = () => {
     const [loading, setLoading] = useState(true);
     const animationRef = useRef(null);
 
-    // Fetch the tree data
     const fetchTree = async () => {
         try {
             const res = await fetch("http://127.0.0.1:5000/abr/show");
@@ -24,7 +23,6 @@ const TriABR = () => {
         }
     };
 
-    // Fetch the traversal sequence
     const fetchTraversalSequence = async () => {
         try {
             const res = await fetch("http://127.0.0.1:5000/abr/traversal/sequence");
@@ -35,7 +33,6 @@ const TriABR = () => {
         }
     };
 
-    // Fetch tree with highlighted node
     const fetchTreeWithHighlight = async (value) => {
         try {
             const res = await fetch(`http://127.0.0.1:5000/abr/tree/highlight/${value}`);
@@ -46,57 +43,40 @@ const TriABR = () => {
         }
     };
 
-    // Start the animation
     const startAnimation = () => {
         if (traversalSequence.length === 0) return;
-        
         setIsAnimating(true);
         setCurrentStep(0);
         setSortedValues([]);
-        
-        // Reset tree to normal state first
         fetchTree();
-        
-        // Start the step-by-step animation
         animationRef.current = setTimeout(() => {
             animateStep(0);
         }, 1000);
     };
 
-    // Animate each step
     const animateStep = (step) => {
         if (step >= traversalSequence.length) {
             setIsAnimating(false);
             return;
         }
-
-        // Highlight the current node
         const currentValue = traversalSequence[step];
         setHighlightedNode(currentValue);
         fetchTreeWithHighlight(currentValue);
-        
-        // Add the value to sorted values
         setSortedValues(prev => [...prev, currentValue]);
-        
-        // Move to the next step
         setCurrentStep(step + 1);
-        
-        // Schedule the next step
         animationRef.current = setTimeout(() => {
             animateStep(step + 1);
-        }, 1500); // Adjust timing as needed
+        }, 1500);
     };
 
-    // Stop the animation
     const stopAnimation = () => {
         if (animationRef.current) {
             clearTimeout(animationRef.current);
         }
         setIsAnimating(false);
-        fetchTree(); // Reset tree to normal state
+        fetchTree();
     };
 
-    // Reset the animation
     const resetAnimation = () => {
         stopAnimation();
         setCurrentStep(0);

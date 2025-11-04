@@ -12,7 +12,6 @@ const TriTASMIN = () => {
     const [loading, setLoading] = useState(true);
     const animationRef = useRef(null);
 
-    // Fetch the heap data
     const fetchHeap = async () => {
         try {
             const res = await fetch("http://127.0.0.1:5000/tasmin/show");
@@ -23,7 +22,6 @@ const TriTASMIN = () => {
         }
     };
 
-    // Fetch the extraction sequence
     const fetchExtractionSequence = async () => {
         try {
             const res = await fetch("http://127.0.0.1:5000/tasmin/extraction/sequence");
@@ -34,7 +32,6 @@ const TriTASMIN = () => {
         }
     };
 
-    // Fetch heap at a specific step
     const fetchHeapAtStep = async (step) => {
         try {
             const res = await fetch(`http://127.0.0.1:5000/tasmin/heap/step/${step}`);
@@ -44,56 +41,36 @@ const TriTASMIN = () => {
             setError("Erreur lors du chargement de l'état du tas");
         }
     };
-
-    // Start the animation
     const startAnimation = () => {
         if (extractionSequence.length === 0) return;
-        
         setIsAnimating(true);
         setCurrentStep(0);
         setSortedValues([]);
-        
-        // Reset heap to initial state
         fetchHeap();
-        
-        // Start the step-by-step animation
         animationRef.current = setTimeout(() => {
             animateStep(0);
         }, 1000);
     };
 
-    // Animate each step
     const animateStep = (step) => {
         if (step >= extractionSequence.length) {
             setIsAnimating(false);
             return;
         }
-
-        // Add the extracted value to sorted values
         setSortedValues(prev => [...prev, extractionSequence[step]]);
-        
-        // Show the heap after extraction
         fetchHeapAtStep(step + 1);
-        
-        // Move to the next step
         setCurrentStep(step + 1);
-        
-        // Schedule the next step
         animationRef.current = setTimeout(() => {
             animateStep(step + 1);
-        }, 1500); // Adjust timing as needed
+        }, 1500);
     };
-
-    // Stop the animation
     const stopAnimation = () => {
         if (animationRef.current) {
             clearTimeout(animationRef.current);
         }
         setIsAnimating(false);
-        fetchHeap(); // Reset heap to initial state
+        fetchHeap();
     };
-
-    // Reset the animation
     const resetAnimation = () => {
         stopAnimation();
         setCurrentStep(0);
@@ -102,8 +79,6 @@ const TriTASMIN = () => {
 
     useEffect(() => {
         Promise.all([fetchHeap(), fetchExtractionSequence()]).finally(() => setLoading(false));
-        
-        // Clean up animation on unmount
         return () => {
             if (animationRef.current) {
                 clearTimeout(animationRef.current);
@@ -111,7 +86,6 @@ const TriTASMIN = () => {
         };
     }, []);
 
-    // Custom node rendering to highlight nodes
     const renderNodeWithCustomization = ({ nodeDatum, toggleNode }) => {
         const isHighlighted = nodeDatum.attributes?.highlight;
         
@@ -119,7 +93,7 @@ const TriTASMIN = () => {
             <g>
                 <circle
                     r={15}
-                    fill={isHighlighted ? "#ef4444" : "#16a34a"} // Red if highlighted, green otherwise
+                    fill={isHighlighted ? "#ef4444" : "#16a34a"}
                     stroke={isHighlighted ? "#991b1b" : "#14532d"}
                     strokeWidth={2}
                 />

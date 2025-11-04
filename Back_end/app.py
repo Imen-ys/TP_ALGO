@@ -970,14 +970,12 @@ def get_info_tasmin():
 # --------------------------------- TP3 --------------------------------------
 
 # -------------------- Tri ABR --------------------
-import time
 
 def InOrder(node):
     if node is None:
         return []
     return InOrder(node.left) + [node.value] + InOrder(node.right)
 
-# Add these functions for animation
 def inorder_traversal_sequence_abr(node, sequence=None):
     if sequence is None:
         sequence = []
@@ -997,8 +995,8 @@ def to_dict_abr_with_highlight(node, highlight_value=None):
         "attributes": {
             "highlight": is_highlighted
         },
-        "children": [child for child in [to_dict_abr_with_highlight(node.left, highlight_value), 
-                                       to_dict_abr_with_highlight(node.right, highlight_value)] if child]
+        "children": [child for child in [to_dict_abr_with_highlight(node.left, highlight_value),
+                                        to_dict_abr_with_highlight(node.right, highlight_value)] if child]
     }
 
 # Keep your existing TriABR routes
@@ -1006,19 +1004,13 @@ def to_dict_abr_with_highlight(node, highlight_value=None):
 def tri_abr():
     global root_abr
 
-    start_time = time.time()
 
     if root_abr is None:
-        Time = round((time.time() - start_time) * 1000, 4)
-        return jsonify({"sorted_values": [], "execution_time_ms": Time})
+        return jsonify({"sorted_values": []})
 
     values = InOrder(root_abr)
-
-    Time = round((time.time() - start_time) * 1000, 4)
-
     return jsonify({
-        "sorted_values": values,
-        "execution_time_ms": Time
+        "sorted_values": values
     })
 
 @app.route('/TriABR/show', methods=['GET'])
@@ -1251,82 +1243,58 @@ def get_max_heap_at_step(step):
     return jsonify(max_heap_to_dict_with_highlight(heap_copy, highlight_index)), 200
 
 # ---------------------------- Tri TASMIN ---------------------------
-import time
 
-# Fonction pour obtenir la structure du tas avec mise en évidence
 def heap_to_dict_with_highlight(heap, highlight_index=None):
     if not heap:
         return None
-    
     def build_node(index):
         if index >= len(heap):
             return None
-        
         left_index = 2 * index + 1
         right_index = 2 * index + 2
-        
         is_highlighted = index == highlight_index
-        
         node = {
             "name": str(heap[index]),
             "attributes": {
                 "highlight": is_highlighted
             }
         }
-        
         children = []
         left_child = build_node(left_index)
         right_child = build_node(right_index)
-        
         if left_child:
             children.append(left_child)
         if right_child:
             children.append(right_child)
-            
         if children:
             node["children"] = children
-            
         return node
-    
     return build_node(0)
 
-# Fonction pour obtenir la séquence d'extraction
+
 def get_extraction_sequence(heap):
     if not heap:
         return []
-    
-    # Créer une copie du tas pour ne pas modifier l'original
     heap_copy = heap.copy()
     sequence = []
-    
     while heap_copy:
-        # Extraire le minimum (racine)
         min_val = heap_copy[0]
         sequence.append(min_val)
-        
-        # Remplacer la racine par le dernier élément
         heap_copy[0] = heap_copy[-1]
         heap_copy.pop()
-        
-        # Reconstituer le tas (heapify)
         if heap_copy:
             heapify(heap_copy, 0)
-    
     return sequence
 
-# Fonction heapify pour reconstituer le tas
 def heapify(heap, i):
     n = len(heap)
     smallest = i
     left = 2 * i + 1
     right = 2 * i + 2
-    
     if left < n and heap[left] < heap[smallest]:
         smallest = left
-    
     if right < n and heap[right] < heap[smallest]:
         smallest = right
-    
     if smallest != i:
         heap[i], heap[smallest] = heap[smallest], heap[i]
         heapify(heap, smallest)
@@ -1334,25 +1302,16 @@ def heapify(heap, i):
 @app.route("/TriTASMIN", methods=["GET"])
 def tri_tasmin():
     global heap
-    start_time = time.time()
     if not heap.heap:
-        Time = round((time.time() - start_time) * 1000, 4)
-        return jsonify({"sorted_values": [], "execution_time_ms": Time})
-
-    # Sort values from smallest to largest (ascending order)
+        return jsonify({"sorted_values": []})
     sorted_values = sorted(heap.heap)
-
-    Time = round((time.time() - start_time) * 1000, 4)
     return jsonify({
         "sorted_values": sorted_values,
-        "execution_time_ms": Time
     })
 
 @app.route('/TriTASMIN/show', methods=['GET'])
 def show_tri_tasmin():
     return tri_tasmin()
-
-# Nouvelles routes pour l'animation
 @app.route('/tasmin/extraction/sequence', methods=['GET'])
 def get_extraction_sequence_route():
     global heap
@@ -1366,26 +1325,15 @@ def get_heap_at_step(step):
     global heap
     if not heap.heap:
         return jsonify({"message": "No heap yet"}), 200
-    
-    # Créer une copie du tas pour simuler l'état à l'étape donnée
     heap_copy = heap.heap.copy()
-    
-    # Simuler l'extraction jusqu'à l'étape donnée
     for i in range(step):
         if not heap_copy:
             break
-        
-        # Extraire le minimum (racine)
         heap_copy[0] = heap_copy[-1]
         heap_copy.pop()
-        
-        # Reconstituer le tas
         if heap_copy:
             heapify(heap_copy, 0)
-    
-    # Déterminer quel élément sera extrait à l'étape suivante
     highlight_index = 0 if heap_copy else None
-    
     return jsonify(heap_to_dict_with_highlight(heap_copy, highlight_index)), 200
 
 
@@ -1393,20 +1341,35 @@ def get_heap_at_step(step):
 
 # ---------------------------------- Tri Bitonique ---------------------------
 steps = []
+uploaded_numbers = []
 
 def compare_and_swap(arr, low, cnt, direction):
-    """A helper function to compare and swap elements."""
     if cnt > 1:
         k = cnt // 2
         for i in range(low, low + k):
-            if (direction == 1 and arr[i] > arr[i + k]) or \
-                (direction == 0 and arr[i] < arr[i + k]):
-                arr[i], arr[i + k] = arr[i + k], arr[i]
-                # Record the state after each swap
-                steps.append(list(arr))
+            # Check if i + k is within the array bounds
+            if i + k < len(arr):
+                if (direction == 1 and arr[i] > arr[i + k]) or \
+                    (direction == 0 and arr[i] < arr[i + k]):
+                    steps.append({
+                        "array": list(arr),
+                        "swapped": [i, i + k],
+                        "comparing": []
+                    })
+                    arr[i], arr[i + k] = arr[i + k], arr[i]
+                    steps.append({
+                        "array": list(arr),
+                        "swapped": [],
+                        "comparing": []
+                    })
+                else:
+                    steps.append({
+                        "array": list(arr),
+                        "swapped": [],
+                        "comparing": [i, i + k]
+                    })
 
 def bitonic_merge(arr, low, cnt, direction):
-    """Recursively sorts a bitonic sequence."""
     if cnt > 1:
         k = cnt // 2
         compare_and_swap(arr, low, cnt, direction)
@@ -1414,44 +1377,106 @@ def bitonic_merge(arr, low, cnt, direction):
         bitonic_merge(arr, low + k, k, direction)
 
 def bitonic_sort_recursive(arr, low, cnt, direction):
-    """The main recursive function to generate a bitonic sequence and then sort it."""
     if cnt > 1:
         k = cnt // 2
-        bitonic_sort_recursive(arr, low, k, 1) # Sort in ascending order
-        bitonic_sort_recursive(arr, low + k, k, 0) # Sort in descending order
-        bitonic_merge(arr, low, cnt, direction) # Merge the whole sequence
+        bitonic_sort_recursive(arr, low, k, 1)
+        bitonic_sort_recursive(arr, low + k, k, 0)
+        bitonic_merge(arr, low, cnt, direction)
+
+def bitonic_sort(arr):
+    # Find the next power of 2 greater than or equal to the length of the array
+    n = len(arr)
+    power_of_2 = 1
+    while power_of_2 < n:
+        power_of_2 *= 2
+    
+    # If the array size is already a power of 2, use the standard algorithm
+    if n == power_of_2:
+        steps.append({
+            "array": list(arr),
+            "swapped": [],
+            "comparing": []
+        })
+        bitonic_sort_recursive(arr, 0, n, 1)
+        return arr
+    
+    # For non-power-of-2 arrays, use a modified approach
+    # First, sort the largest power-of-2 subset
+    largest_power_of_2 = 1
+    while largest_power_of_2 * 2 <= n:
+        largest_power_of_2 *= 2
+    
+    steps.append({
+        "array": list(arr),
+        "swapped": [],
+        "comparing": []
+    })
+    
+    # Sort the largest power-of-2 subset
+    bitonic_sort_recursive(arr, 0, largest_power_of_2, 1)
+    
+    # Then insert the remaining elements in their correct positions
+    for i in range(largest_power_of_2, n):
+        j = i
+        while j > 0 and arr[j-1] > arr[j]:
+            steps.append({
+                "array": list(arr),
+                "swapped": [j-1, j],
+                "comparing": []
+            })
+            arr[j-1], arr[j] = arr[j], arr[j-1]
+            steps.append({
+                "array": list(arr),
+                "swapped": [],
+                "comparing": []
+            })
+            j -= 1
+    
+    return arr
+
+# -------------------- ROUTES --------------------
 import re
 @app.route('/bitonique/upload', methods=['POST'])
-def upload_and_sort():
-    global steps
-    steps = [] # Reset steps for each new request
-    
+def bitonique_upload_file():
+    """Receive file and store numbers (no sorting yet)."""
+    global uploaded_numbers
+    uploaded_numbers = []  # reset old data
+
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
-    
+
     file = request.files['file']
-    
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
 
-    if file:
-        try:
-            content = file.read().decode('utf-8')
-            numbers = list(map(int, re.findall(r'-?\d+', content)))
-            
-            if not numbers:
-                return jsonify({"error": "No numbers found in file"}), 400
+    try:
+        content = file.read().decode('utf-8')
+        numbers = list(map(int, re.findall(r'-?\d+', content)))
 
-            # Add the initial state as the first step
-            steps.append(list(numbers))
-            
-            # Perform the bitonic sort and record steps
-            bitonic_sort_recursive(numbers, 0, len(numbers), 1) # 1 for ascending sort
-            
-            return jsonify({"steps": steps})
+        if not numbers:
+            return jsonify({"error": "No numbers found in file"}), 400
 
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
+        uploaded_numbers = numbers  # save numbers globally
+        return jsonify({"message": "File uploaded successfully!", "numbers": numbers}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/bitonique/sort', methods=['GET'])
+def sort_uploaded_file():
+    """Perform the Bitonic Sort on the last uploaded numbers."""
+    global steps, uploaded_numbers
+    steps = []
+
+    if not uploaded_numbers:
+        return jsonify({"error": "No file uploaded yet!"}), 400
+
+    arr = uploaded_numbers.copy()
+    # Use the new bitonic_sort function that handles non-power-of-2 arrays
+    sorted_arr = bitonic_sort(arr)
+    
+    return jsonify({"steps": steps}), 200
 
 
 
