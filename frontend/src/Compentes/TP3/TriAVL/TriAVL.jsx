@@ -148,7 +148,7 @@ const TriAVL = () => {
 
             <div className="min-h-screen flex flex-col items-center bg-green-50 p-6">
                 <h1 className="text-3xl font-bold text-green-700 mb-6">
-                    Tri par AVL avec Animation
+                    Tri par AVL
                 </h1>
 
                 {loading ? (

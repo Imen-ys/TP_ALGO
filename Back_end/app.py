@@ -177,7 +177,7 @@ def insert_abr(node, value):
         node.right = insert_abr(node.right, value)
     return node
 
-def to_dict_abr(node): #Converts the ABR into a JSON-like dictionary (for React Tree visualization).
+def to_dict_abr(node):
     if node is None:
         return None
     return {
@@ -220,8 +220,7 @@ def search_abr(node, value):
     else:
         return search_abr(node.right, value)
 
-# ---  Delete function ---
-def min_value_node(node): # Finds the smallest value node (used when deleting a node with two children)
+def min_value_node(node):
     current = node
     while current.left is not None:
         current = current.left
@@ -230,18 +229,11 @@ def min_value_node(node): # Finds the smallest value node (used when deleting a 
 def delete_abr(node, value):
     if node is None:
         return node
-
     if value < node.value:
         node.left = delete_abr(node.left, value)
-    
-    # If the value to be deleted is greater than the node's value,
-    # then it lies in the right subtree
     elif value > node.value:
         node.right = delete_abr(node.right, value)
-    
-    # If value is same as node's value, then this is the node to be deleted
     else:
-        # Node with only one child or no child
         if node.left is None:
             temp = node.right
             node = None
@@ -250,15 +242,9 @@ def delete_abr(node, value):
             temp = node.left
             node = None
             return temp
-
-        # Node with two children: Get the inorder successor
         temp = min_value_node(node.right)
-
-        # Copy the inorder successor's content to this node
         node.value = temp.value
-
-        # Delete the inorder successor
-        node.right = delete_abr(node.right, temp.value) # Then delete value from right subtree ..... removes original value node.
+        node.right = delete_abr(node.right, temp.value)
 
     return node
 
@@ -618,7 +604,7 @@ def search_value_avl():
         "message": f"Value {value} {'exists' if exists else 'does not exist'} in the tree"
     }), 200
 
-# -------------------- TAS MAX (Max-Heap) --------------------
+# -------------------- TAS MAX --------------------
 class MaxHeap:
     def __init__(self):
         self.heap = []
@@ -656,24 +642,21 @@ class MaxHeap:
             index = largest
 
     def delete(self, value):
-        # Find the index of the value to delete
         try:
             index = self.heap.index(value)
         except ValueError:
             return False  # Value not found
         
-        # Replace the value to delete with the last element
         last_element = self.heap.pop()
         if index < len(self.heap):
             self.heap[index] = last_element
-            # Determine whether to heapify up or down
             parent = (index - 1) // 2
             if index > 0 and self.heap[index] > self.heap[parent]:
                 self._heapify_up(index)
             else:
                 self._heapify_down(index)
         
-        return True  # Deletion successful
+        return True
 
     def search(self, value):
         return value in self.heap
@@ -685,7 +668,7 @@ class MaxHeap:
         right = self._to_tree_dict(2 * index + 2)
         return {
             "name": str(self.heap[index]),
-            "children": [c for c in [left, right] if c]
+            "children": [c for c in (left, right) if c]
         }
 
     def tree_height(self, index=0):
@@ -711,89 +694,90 @@ class MaxHeap:
         n = self.node_count()
         return n / h if h > 0 else 0
 
-# Create a global instance of MaxHeap
-heap = MaxHeap()
+# Create a clear global instance of MaxHeap
+max_heap = MaxHeap()
 
 # --- Routes ---
-
 @app.route("/tasmax/insert", methods=["POST"])
 def insert_tasmax():
-    value = request.json["value"]
-    heap.insert(value)
-    return jsonify(heap._to_tree_dict())
+    value = request.json.get("value")
+    max_heap.insert(value)
+    return jsonify({"success": True, "message": f"Inserted {value}", "tree": max_heap._to_tree_dict()})
 
 @app.route("/tasmax/delete", methods=["POST"])
 def delete_tasmax():
-    value = request.json["value"]
-    success = heap.delete(value)
+    value = request.json.get("value")
+    success = max_heap.delete(value)
     if success:
         return jsonify({
+            "success": True,
             "message": f"Value {value} deleted successfully!",
-            "tree": heap._to_tree_dict()
-        })
+            "tree": max_heap._to_tree_dict()
+        }), 200
     else:
+        # return 200 but indicate success False so frontend can handle gracefully
         return jsonify({
+            "success": False,
             "message": f"Value {value} not found in the heap!",
-            "tree": heap._to_tree_dict()
-        }), 404
+            "tree": max_heap._to_tree_dict()
+        }), 200
 
 @app.route("/tasmax/search", methods=["POST"])
 def search_tasmax():
-    value = request.json["value"]
-    found = heap.search(value)
+    value = request.json.get("value")
+    found = max_heap.search(value)
     return jsonify({
+        "success": True,
         "value": value,
         "found": found,
         "message": f"Value {value} {'found' if found else 'not found'} in the heap!"
-    })
+    }), 200
 
 @app.route("/tasmax/reset", methods=["POST"])
 def reset_tasmax():
-    heap.reset()
-    return jsonify({"message": "TasMax reset!"})
+    max_heap.reset()
+    return jsonify({"success": True, "message": "TasMax reset!", "tree": None})
 
 @app.route('/tasmax/upload', methods=['POST'])
 def upload_file_tasmax():
     # Reset the heap before inserting new values
-    heap.reset()
+    max_heap.reset()
     
     file = request.files['file']
     content = file.read().decode('utf-8')
-
-    import re
     cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
     all_numbers = [int(n) for n in re.findall(r'\d+', cleaned)]
 
+    # NOTE: keep same filtering logic if you need it; here I keep your filter
     filtered = [n for i, n in enumerate(all_numbers) if (i + 1) % 3 != 0]
 
-    # Insert each value into the heap
     for v in filtered:
-        heap.insert(v)
+        max_heap.insert(v)
 
     return jsonify({
+        'success': True,
         'message': 'File uploaded and TASMAX built successfully!',
-        'values': filtered
-    })
+        'values': filtered,
+        'tree': max_heap._to_tree_dict()
+    }), 200
 
 @app.route('/tasmax/show', methods=['GET'])
 def show_tasmax():
-    if not heap.heap:
-        return jsonify({"message": "No TASMAX tree yet"}), 200
-    return jsonify(heap._to_tree_dict()), 200
+    return jsonify({"tree": max_heap._to_tree_dict()}), 200
 
 @app.route('/tasmax/info', methods=['GET'])
 def get_info_tasmax():
-    if not heap.heap:
+    if not max_heap.heap:
         return jsonify({"height": 0, "degree": 0, "density": 0}), 200
     info = {
-        "height": heap.tree_height(),
-        "degree": heap.max_degree(),
-        "density": heap.density()
+        "height": max_heap.tree_height(),
+        "degree": max_heap.max_degree(),
+        "density": max_heap.density()
     }
     return jsonify(info), 200
 
 
-# -------------------- TAS MIN (Min-Heap) --------------------
+# -------------------- TAS MIN  --------------------
 class MinHeap:
     def __init__(self):
         self.heap = []
@@ -807,44 +791,37 @@ class MinHeap:
 
     def _heapify_up(self, index):
         parent = (index - 1) // 2
-        if index > 0 and self.heap[index] < self.heap[parent]:  # Changed comparison
+        if index > 0 and self.heap[index] < self.heap[parent]:
             self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
             self._heapify_up(parent)
 
     def _heapify_down(self, index):
-        smallest = index  # Changed from 'largest' to 'smallest'
+        smallest = index
         left = 2 * index + 1
         right = 2 * index + 2
-        
-        if left < len(self.heap) and self.heap[left] < self.heap[smallest]:  # Changed comparison
+
+        if left < len(self.heap) and self.heap[left] < self.heap[smallest]:
             smallest = left
-            
-        if right < len(self.heap) and self.heap[right] < self.heap[smallest]:  # Changed comparison
+        if right < len(self.heap) and self.heap[right] < self.heap[smallest]:
             smallest = right
-            
         if smallest != index:
             self.heap[index], self.heap[smallest] = self.heap[smallest], self.heap[index]
-            self._heapify_down(smallest)  # Changed from 'largest' to 'smallest'
+            self._heapify_down(smallest)
 
     def delete(self, value):
-        # Find the index of the value to delete
         try:
             index = self.heap.index(value)
         except ValueError:
-            return False  # Value not found
-        
-        # Replace the value to delete with the last element
+            return False
         last_element = self.heap.pop()
         if index < len(self.heap):
             self.heap[index] = last_element
-            # Determine whether to heapify up or down
             parent = (index - 1) // 2
-            if index > 0 and self.heap[index] < self.heap[parent]:  # Changed comparison
+            if index > 0 and self.heap[index] < self.heap[parent]:
                 self._heapify_up(index)
             else:
                 self._heapify_down(index)
-        
-        return True  # Deletion successful
+        return True
 
     def search(self, value):
         return value in self.heap
@@ -882,7 +859,6 @@ class MinHeap:
         n = self.node_count()
         return n / h if h > 0 else 0
 
-# Create a global instance of MinHeap
 heap = MinHeap()
 
 # --- Routes ---
@@ -1477,6 +1453,254 @@ def sort_uploaded_file():
     sorted_arr = bitonic_sort(arr)
     
     return jsonify({"steps": steps}), 200
+
+
+
+# ---------------------------- TP4 -----------------------------
+# ------------ Prim ---------------
+
+
+# Add this to your existing Flask app
+import heapq
+
+# Store Prim's algorithm steps globally
+prim_steps = []
+
+@app.route("/prim/upload", methods=["POST"])
+def upload_file_prim():
+    global graph_pondere, prim_steps
+    
+    file = request.files["file"]
+    content = file.read().decode("utf-8")
+    
+    # Parse the file content to build the graph
+    cleaned = content.replace("[", " ").replace("]", " ").replace(",", " ")
+    import re
+    all_values = re.findall(r"\b[a-zA-Z0-9]+\b", cleaned)
+    
+    edges = []
+    i = 0
+    while i + 2 < len(all_values):
+        a = all_values[i]
+        b = all_values[i + 1]
+        poids = float(all_values[i + 2])
+        edges.append((a, b, poids))
+        i += 3
+    
+    graph_pondere = {}
+    for a, b, poids in edges:
+        add_edge_pondere(graph_pondere, a, b, poids)
+        # For undirected graph, add edge in both directions
+        add_edge_pondere(graph_pondere, b, a, poids)
+    
+    # Reset steps
+    prim_steps = []
+    
+    return jsonify({
+        "message": "Graph uploaded successfully for Prim's algorithm!",
+        "graph": graph_pondere
+    })
+
+@app.route("/prim/execute", methods=["GET"])
+def execute_prim():
+    global graph_pondere, prim_steps
+    if not graph_pondere:
+        return jsonify({"error": "No graph available. Please upload a graph first."})
+
+    prim_steps = []
+    start_node = next(iter(graph_pondere.keys()))
+    visited = {start_node}
+    min_spanning_tree = []
+
+    prim_steps.append({
+        "type": "start",
+        "current_node": start_node,
+        "visited": list(visited),
+        "tree_edges": min_spanning_tree.copy(),
+        "message": f"Starting Prim's algorithm from node {start_node}"
+    })
+    edges_queue = []
+
+    for neighbor, weight in graph_pondere[start_node]:
+        heapq.heappush(edges_queue, (weight, start_node, neighbor))
+
+    while edges_queue and len(visited) < len(graph_pondere):
+        weight, from_node, to_node = heapq.heappop(edges_queue)
+
+        if to_node in visited:
+            prim_steps.append({
+                "type": "skip_edge",
+                "edge": (from_node, to_node, weight),
+                "visited": list(visited),
+                "tree_edges": min_spanning_tree.copy(),
+                "message": f"Skipping edge {from_node}-{to_node} (weight: {weight}) as {to_node} is already visited"
+            })
+            continue
+
+        min_spanning_tree.append((from_node, to_node, weight))
+        visited.add(to_node)
+
+        prim_steps.append({
+            "type": "add_edge",
+            "edge": (from_node, to_node, weight),
+            "visited": list(visited),
+            "tree_edges": min_spanning_tree.copy(),
+            "message": f"Adding edge {from_node}-{to_node} (weight: {weight}) to the MST"
+        })
+
+        for neighbor, w in graph_pondere[to_node]:
+            if neighbor not in visited:
+                heapq.heappush(edges_queue, (w, to_node, neighbor))
+
+    total_weight = sum(edge[2] for edge in min_spanning_tree)
+
+    prim_steps.append({
+        "type": "complete",
+        "tree_edges": min_spanning_tree,
+        "total_weight": total_weight,
+        "visited": list(visited),
+        "message": f"Prim's algorithm complete. Total weight: {total_weight}"
+    })
+    
+    return jsonify({
+        "steps": prim_steps,
+        "tree": min_spanning_tree,
+        "total_weight": total_weight
+    })
+
+@app.route("/prim/steps", methods=["GET"])
+def get_prim_steps():
+    global prim_steps
+    return jsonify({"steps": prim_steps})
+
+
+# ------------------- Kruskal --------------------
+
+# Add this to your existing Flask app
+import heapq
+
+# Store Kruskal's algorithm steps globally
+kruskal_steps = []
+
+@app.route("/kruskal/upload", methods=["POST"])
+def upload_file_kruskal():
+    global graph_pondere, kruskal_steps
+
+    file = request.files["file"]
+    content = file.read().decode("utf-8")
+
+    cleaned = content.replace("[", " ").replace("]", " ").replace(",", " ")
+    import re
+    all_values = re.findall(r"\b[a-zA-Z0-9]+\b", cleaned)
+
+    edges = []
+    i = 0
+    while i + 2 < len(all_values):
+        a = all_values[i]
+        b = all_values[i + 1]
+        poids = float(all_values[i + 2])
+        edges.append((a, b, poids))
+        i += 3
+
+    graph_pondere = {}
+    for a, b, poids in edges:
+        add_edge_pondere(graph_pondere, a, b, poids)
+        add_edge_pondere(graph_pondere, b, a, poids)
+
+    kruskal_steps = []
+
+    return jsonify({
+        "message": "Graph uploaded successfully for Kruskal's algorithm!",
+        "graph": graph_pondere
+    })
+
+@app.route("/kruskal/execute", methods=["GET"])
+def execute_kruskal():
+    global graph_pondere, kruskal_steps
+
+    if not graph_pondere:
+        return jsonify({"error": "No graph available. Please upload a graph first."})
+
+    kruskal_steps = []
+
+    edges = []
+    for node in graph_pondere:
+        for neighbor, weight in graph_pondere[node]:
+            if not any((e[0] == node and e[1] == neighbor) or (e[0] == neighbor and e[1] == node) for e in edges):
+                edges.append((node, neighbor, weight))
+
+    edges.sort(key=lambda x: x[2])
+    kruskal_steps.append({
+        "type": "start",
+        "sorted_edges": edges.copy(),
+        "tree_edges": [],
+        "message": f"Starting Kruskal's algorithm with {len(edges)} edges sorted by weight"
+    })
+
+    parent = {}
+    rank = {}
+
+    for node in graph_pondere:
+        parent[node] = node
+        rank[node] = 0
+
+    def find(node):
+        if parent[node] != node:
+            parent[node] = find(parent[node])
+        return parent[node]
+
+    def union(node1, node2):
+        root1 = find(node1)
+        root2 = find(node2)
+        if root1 != root2:
+            if rank[root1] > rank[root2]:
+                parent[root2] = root1
+            else:
+                parent[root1] = root2
+                if rank[root1] == rank[root2]:
+                    rank[root2] += 1
+            return True
+        return False
+    min_spanning_tree = []
+    for edge in edges:
+        node1, node2, weight = edge
+        if union(node1, node2):
+            min_spanning_tree.append(edge)
+            kruskal_steps.append({
+                "type": "add_edge",
+                "edge": edge,
+                "tree_edges": min_spanning_tree.copy(),
+                "message": f"Adding edge {node1}-{node2} (weight: {weight}) to the MST"
+            })
+        else:
+            kruskal_steps.append({
+                "type": "skip_edge",
+                "edge": edge,
+                "tree_edges": min_spanning_tree.copy(),
+                "message": f"Skipping edge {node1}-{node2} (weight: {weight}) as it would create a cycle"
+            })
+
+        if len(min_spanning_tree) == len(graph_pondere) - 1:
+            break
+
+    total_weight = sum(edge[2] for edge in min_spanning_tree)
+
+    kruskal_steps.append({
+        "type": "complete",
+        "tree_edges": min_spanning_tree,
+        "total_weight": total_weight,
+        "message": f"Kruskal's algorithm complete. Total weight: {total_weight}"
+    })
+    return jsonify({
+        "steps": kruskal_steps,
+        "tree": min_spanning_tree,
+        "total_weight": total_weight
+    })
+
+@app.route("/kruskal/steps", methods=["GET"])
+def get_kruskal_steps():
+    global kruskal_steps
+    return jsonify({"steps": kruskal_steps})
 
 
 

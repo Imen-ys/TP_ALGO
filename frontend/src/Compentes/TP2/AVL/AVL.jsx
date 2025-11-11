@@ -66,7 +66,7 @@ const AVL = () => {
       setSearchResult({ message: "Veuillez entrer une valeur à rechercher" });
       return;
     }
-    
+
     try {
       const res = await fetch("http://127.0.0.1:5000/avl/search", {
         method: "POST",

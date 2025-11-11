@@ -3,6 +3,7 @@ import Tree from "react-d3-tree";
 import { NavBar, HomePageOfTP2 } from "../../index";
 
 const TASMAX = () => {
+
   const [treeData, setTreeData] = useState(null);
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,70 +13,68 @@ const TASMAX = () => {
   const [searchResult, setSearchResult] = useState(null);
   const [deleteMessage, setDeleteMessage] = useState(null);
 
-  const fetchTree = async () => {
-    try {
-      const res = await fetch("http://127.0.0.1:5000/tasmax/show");
-      const data = await res.json();
-      setTreeData(data);
-    } catch (err) {
-      setError("Erreur lors du chargement de l'arbre");
-    }
-  };
+ const fetchTree = async () => {
+  try {
+    const res = await fetch("http://127.0.0.1:5000/tasmax/show");
+    const data = await res.json();
+    // backend returns { tree: ... }
+    setTreeData(data.tree ?? data);
+  } catch (err) {
+    setError("Erreur lors du chargement de l'arbre");
+  }
+}
 
-  const fetchInfo = async () => {
-    try {
-      const res = await fetch("http://127.0.0.1:5000/tasmax/info");
-      const data = await res.json();
-      setInfo(data);
-    } catch (err) {
-      setError("Erreur lors du chargement des informations");
-    }
-  };
+const fetchInfo = async () => {
+  try {
+    const res = await fetch("http://127.0.0.1:5000/tasmax/info");
+    const data = await res.json();
+    setInfo(data);
+  } catch (err) {
+    setError("Erreur lors du chargement des informations");
+  }
+};
 
-  const handleDelete = async () => {
-    if (!deleteValue) {
-      setDeleteMessage("Veuillez entrer une valeur à supprimer");
-      return;
-    }
-    
-    try {
-      const res = await fetch("http://127.0.0.1:5000/tasmax/delete", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ value: parseInt(deleteValue) }),
-      });
-      const data = await res.json();
-      setDeleteMessage(data.message);
-      setTreeData(data.tree);
-      // Refresh info after deletion
-      fetchInfo();
-    } catch (err) {
-      setDeleteMessage("Erreur lors de la suppression de la valeur");
-    }
-  };
+const handleDelete = async () => {
+  if (!deleteValue && deleteValue !== 0) {
+    setDeleteMessage({ text: "Veuillez entrer une valeur à supprimer", success: false });
+    return;
+  }
+  
+  try {
+    const res = await fetch("http://127.0.0.1:5000/tasmax/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value: parseInt(deleteValue, 10) }),
+    });
+    const data = await res.json();
+    // backend returns success boolean + tree
+    setDeleteMessage({ text: data.message, success: !!data.success });
+    if (data.tree) setTreeData(data.tree);
+    // Refresh info
+    fetchInfo();
+  } catch (err) {
+    setDeleteMessage({ text: "Erreur lors de la suppression de la valeur", success: false });
+  }
+};
 
-  const handleSearch = async () => {
-    if (!searchValue) {
-      setSearchResult({ found: false, message: "Veuillez entrer une valeur à rechercher" });
-      return;
-    }
-    
-    try {
-      const res = await fetch("http://127.0.0.1:5000/tasmax/search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ value: parseInt(searchValue) }),
-      });
-      const data = await res.json();
-      setSearchResult(data);
-    } catch (err) {
-      setSearchResult({ found: false, message: "Erreur lors de la recherche" });
-    }
-  };
+const handleSearch = async () => {
+  if (!searchValue && searchValue !== 0) {
+    setSearchResult({ found: false, message: "Veuillez entrer une valeur à rechercher" });
+    return;
+  }
+  
+  try {
+    const res = await fetch("http://127.0.0.1:5000/tasmax/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value: parseInt(searchValue, 10) }),
+    });
+    const data = await res.json();
+    setSearchResult({ found: data.found, message: data.message });
+  } catch (err) {
+    setSearchResult({ found: false, message: "Erreur lors de la recherche" });
+  }
+};
 
   useEffect(() => {
     Promise.all([fetchTree(), fetchInfo()]).finally(() => setLoading(false));
@@ -124,10 +123,11 @@ const TASMAX = () => {
           </button>
         </div>
         {deleteMessage && (
-          <p className={`mt-2 ${deleteMessage.includes("not found") ? "text-red-500" : "text-green-600"}`}>
-            {deleteMessage}
-          </p>
-        )}
+  <p className={`mt-2 ${deleteMessage.success ? "text-green-600" : "text-red-500"}`}>
+    {deleteMessage.text}
+  </p>
+)}
+
       </div>
 
       <div className="bg-white p-4 rounded-xl shadow w-80 mb-6">
@@ -182,7 +182,7 @@ const TASMAX = () => {
       ) : (
         <>
           {/*  Visual Tree Section */}
-          {treeData ? (
+          {treeData && treeData.name ? (
             <div className="bg-white p-4 rounded-xl shadow w-full h-[500px] flex items-center justify-center mb-8">
               <Tree
                 data={treeData}

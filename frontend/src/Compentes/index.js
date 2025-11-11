@@ -19,3 +19,9 @@ export {default as TriAVL} from "./TP3/TriAVL/TriAVL";
 export {default as TriTasMin} from "./TP3/TriTasMin/TriTasMin";
 export {default as TriTASMAX} from "./TP3/TriTasMax/TriTasMax";
 export {default as TriBitonique} from "./TP3/TriBitonique/TriBitonique";
+
+
+export {default as HomePageOfTP4} from "./TP4/HomePageOfTp4/HomePageOfTp4";
+export {default as Prim} from "./TP4/Prim/Prim";
+export {default as Kruskal} from "./TP4/kruskal/kruskal";
+
