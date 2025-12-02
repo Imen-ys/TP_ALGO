@@ -24,4 +24,6 @@ export {default as TriBitonique} from "./TP3/TriBitonique/TriBitonique";
 export {default as HomePageOfTP4} from "./TP4/HomePageOfTp4/HomePageOfTp4";
 export {default as Prim} from "./TP4/Prim/Prim";
 export {default as Kruskal} from "./TP4/kruskal/kruskal";
+export {default as Floyd} from "./TP4/Floyd/Floyd";
+export {default as WelshPowell} from "./TP4/Welsh_power/Welsh_power";
 

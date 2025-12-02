@@ -947,11 +947,6 @@ def get_info_tasmin():
 
 # -------------------- Tri ABR --------------------
 
-def InOrder(node):
-    if node is None:
-        return []
-    return InOrder(node.left) + [node.value] + InOrder(node.right)
-
 def inorder_traversal_sequence_abr(node, sequence=None):
     if sequence is None:
         sequence = []
@@ -971,29 +966,26 @@ def to_dict_abr_with_highlight(node, highlight_value=None):
         "attributes": {
             "highlight": is_highlighted
         },
-        "children": [child for child in [to_dict_abr_with_highlight(node.left, highlight_value),
-                                        to_dict_abr_with_highlight(node.right, highlight_value)] if child]
+        "children": [
+            child for child in [
+                to_dict_abr_with_highlight(node.left, highlight_value),
+                to_dict_abr_with_highlight(node.right, highlight_value)
+            ] if child
+        ]
     }
-
-# Keep your existing TriABR routes
 @app.route("/TriABR", methods=["GET"])
 def tri_abr():
     global root_abr
-
-
     if root_abr is None:
         return jsonify({"sorted_values": []})
-
-    values = InOrder(root_abr)
-    return jsonify({
-        "sorted_values": values
-    })
+    
+    values = inorder_traversal_sequence_abr(root_abr)
+    return jsonify({"sorted_values": values})
 
 @app.route('/TriABR/show', methods=['GET'])
 def show_tri_abr():
     return tri_abr()
 
-# Add these new routes for animation
 @app.route('/abr/traversal/sequence', methods=['GET'])
 def get_traversal_sequence_abr():
     global root_abr
@@ -1008,6 +1000,7 @@ def get_tree_with_highlight_abr(value):
     if root_abr is None:
         return jsonify({"message": "No ABR tree yet"}), 200
     return jsonify(to_dict_abr_with_highlight(root_abr, value)), 200
+
 
 
 
@@ -1318,12 +1311,10 @@ def get_heap_at_step(step):
 # ---------------------------------- Tri Bitonique ---------------------------
 steps = []
 uploaded_numbers = []
-
 def compare_and_swap(arr, low, cnt, direction):
     if cnt > 1:
         k = cnt // 2
         for i in range(low, low + k):
-            # Check if i + k is within the array bounds
             if i + k < len(arr):
                 if (direction == 1 and arr[i] > arr[i + k]) or \
                     (direction == 0 and arr[i] < arr[i + k]):
@@ -1360,13 +1351,10 @@ def bitonic_sort_recursive(arr, low, cnt, direction):
         bitonic_merge(arr, low, cnt, direction)
 
 def bitonic_sort(arr):
-    # Find the next power of 2 greater than or equal to the length of the array
     n = len(arr)
     power_of_2 = 1
     while power_of_2 < n:
         power_of_2 *= 2
-    
-    # If the array size is already a power of 2, use the standard algorithm
     if n == power_of_2:
         steps.append({
             "array": list(arr),
@@ -1375,23 +1363,15 @@ def bitonic_sort(arr):
         })
         bitonic_sort_recursive(arr, 0, n, 1)
         return arr
-    
-    # For non-power-of-2 arrays, use a modified approach
-    # First, sort the largest power-of-2 subset
     largest_power_of_2 = 1
     while largest_power_of_2 * 2 <= n:
         largest_power_of_2 *= 2
-    
     steps.append({
         "array": list(arr),
         "swapped": [],
         "comparing": []
     })
-    
-    # Sort the largest power-of-2 subset
     bitonic_sort_recursive(arr, 0, largest_power_of_2, 1)
-    
-    # Then insert the remaining elements in their correct positions
     for i in range(largest_power_of_2, n):
         j = i
         while j > 0 and arr[j-1] > arr[j]:
@@ -1407,7 +1387,6 @@ def bitonic_sort(arr):
                 "comparing": []
             })
             j -= 1
-    
     return arr
 
 # -------------------- ROUTES --------------------
@@ -1702,363 +1681,288 @@ def get_kruskal_steps():
     global kruskal_steps
     return jsonify({"steps": kruskal_steps})
 
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
-
-
-
-
-
-# # ---- AMR ----
-# class NodeAMR:
-#     def __init__(self, order):
-#         self.keys = []
-#         self.children = []
-#         self.order = order  # m
-
-# root_amr = None
-# order_amr = None
-
-
-# def insert_amr(node, value, order):
-#     # If node doesn't exist, create one
-#     if node is None:
-#         new_node = NodeAMR(order)
-#         new_node.keys = [value]
-#         return new_node
-
-#     # If node has room for another key (less than m-1)
-#     if len(node.keys) < order - 1 and len(node.children) == 0:
-#         node.keys.append(value)
-#         node.keys.sort()
-#         return node
-
-#     # Otherwise, find which child to insert into
-#     i = 0
-#     while i < len(node.keys) and value > node.keys[i]:
-#         i += 1
-
-#     # Ensure the node has m children
-#     while len(node.children) < order:
-#         node.children.append(None)
-
-#     # Recursive insertion
-#     node.children[i] = insert_amr(node.children[i], value, order)
-#     return node
-
-
-# def to_dict_amr(node):
-#     if node is None:
-#         return None
-#     return {
-#         "name": ", ".join(map(str, node.keys)) if node.keys else "•",
-#         "children": [to_dict_amr(c) for c in node.children if c is not None]
-#     }
-
-
-# # ---- Info Functions ----
-# def tree_height_amr(node):
-#     if node is None:
-#         return 0
-#     # Filter out None children
-#     valid_children = [c for c in node.children if c is not None]
-#     if not valid_children:
-#         return 1
-#     return 1 + max(tree_height_amr(c) for c in valid_children)
-
-
-# def node_count_amr(node):
-#     if node is None:
-#         return 0
-#     valid_children = [c for c in node.children if c is not None]
-#     return 1 + sum(node_count_amr(c) for c in valid_children)
-
-
-# def max_degree_amr(node):
-#     if node is None:
-#         return 0
-#     valid_children = [c for c in node.children if c is not None]
-#     current_degree = len(valid_children)
-#     return max([current_degree] + [max_degree_amr(c) for c in valid_children])
-
-
-# def density_amr(node):
-#     h = tree_height_amr(node)
-#     n = node_count_amr(node)
-#     # Avoid division by zero
-#     return (n / h) if h > 0 else 0
-
-
-
-
-# # ---- Flask Routes ----
-# @app.route("/amr/set_order", methods=["POST"])
-# def set_order_amr():
-#     global order_amr, root_amr
-#     data = request.json
-#     order_amr = data["order"]
-#     root_amr = None
-#     return jsonify({"message": f"Ordre fixé à {order_amr}"})
-
-
-# @app.route("/amr/insert", methods=["POST"])
-# def insert_value_amr():
-#     global root_amr, order_amr
-#     if order_amr is None:
-#         return jsonify({"error": "Ordre non défini"}), 400
-#     value = request.json["value"]
-#     root_amr = insert_amr(root_amr, value, order_amr)
-#     return jsonify(to_dict_amr(root_amr))
-
-
-# @app.route("/amr/reset", methods=["POST"])
-# def reset_tree_amr():
-#     global root_amr
-#     root_amr = None
-#     return jsonify({"message": "AMR réinitialisé"})
-
-
-# @app.route("/amr/info", methods=["GET"])
-# def get_info_amr():
-#     global root_amr
-
-#     if root_amr is None:
-#         return jsonify({
-#             "height": 0,
-#             "degree": 0,
-#             "density": 0
-#         })
-
-#     try:
-#         info = {
-#             "height": tree_height_amr(root_amr),
-#             "degree": max_degree_amr(root_amr),
-#             "density": density_amr(root_amr),
-#         }
-#         return jsonify(info)
-#     except Exception as e:
-#         print("Error in /amr/info:", e)
-#         return jsonify({"error": str(e)}), 500
-
-
-
-
-# # ----------------- B-tree implementation -----------------
-# class NodeBArber:
-#     def __init__(self, order, is_leaf=True):
-#         self.keys = []         # list of keys in node
-#         self.children = []     # list of child NodeBArber (length = len(keys)+1 if internal)
-#         self.order = order     # order (m). In this implementation, a node can hold up to (order - 1) keys
-#         self.is_leaf = is_leaf
-
-#     def __repr__(self):
-#         return f"Node(keys={self.keys}, leaf={self.is_leaf})"
-
-
-# def split_child(parent, index):
-
-#     child = parent.children[index]
-#     mid = len(child.keys) // 2
-#     new_child = NodeBArber(child.order, is_leaf=child.is_leaf)
-
-#     # median key to promote
-#     mid_key = child.keys[mid]
-
-#     # Right half (keys after median) -> new_child.keys
-#     new_child.keys = child.keys[mid + 1 :]
-#     # Left half (keys before median) remains in child
-#     child.keys = child.keys[:mid]
-
-#     # If child had children (i.e., not a leaf), split its children as well
-#     if not child.is_leaf:
-#         # children are len(old_child.keys) + 1 originally
-#         # Right half children go to new_child
-#         new_child.children = child.children[mid + 1 :]
-#         # Left half children remain in child
-#         child.children = child.children[: mid + 1]
-
-#     # Insert the median key into parent and new_child as parent's new child
-#     parent.keys.insert(index, mid_key)
-#     parent.children.insert(index + 1, new_child)
-
-
-# def insert_non_full(node, value):
-
-#     i = len(node.keys) - 1
-
-#     if node.is_leaf:
-#         # Insert value into the keys list and keep them sorted
-#         node.keys.append(value)
-#         node.keys.sort()
-#         return
-
-#     # find child index to descend into
-#     while i >= 0 and value < node.keys[i]:
-#         i -= 1
-#     i += 1
-
-#     # If the child is full, split it
-#     # child full condition: len(node.children[i].keys) == node.order - 1
-#     if len(node.children[i].keys) == node.order - 1:
-#         split_child(node, i)
-#         # After split, the parent gained a key at position i.
-#         # Decide whether to go to left or right child
-#         if value > node.keys[i]:
-#             i += 1
-
-#     insert_non_full(node.children[i], value)
-
-
-# def insert_barber(root, value, order):
-
-#     if root is None:
-#         new_root = NodeBArber(order)
-#         new_root.keys = [value]
-#         return new_root
-
-#     # If root is full, need to split and increase tree height
-#     if len(root.keys) == order - 1:
-#         new_root = NodeBArber(order, is_leaf=False)
-#         new_root.children.append(root)
-#         split_child(new_root, 0)
-#         # choose correct child after split
-#         idx = 0
-#         if value > new_root.keys[0]:
-#             idx = 1
-#         insert_non_full(new_root.children[idx], value)
-#         return new_root
-#     else:
-#         insert_non_full(root, value)
-#         return root
-
-
-# def to_dict_barber(node):
-
-#     if node is None:
-#         return None
-#     name = ", ".join(map(str, node.keys)) if node.keys else "•"
-#     return {
-#         "name": name,
-#         "children": [to_dict_barber(c) for c in node.children] if node.children else []
-#     }
-
-
-# # ----------------- Info functions -----------------
-# def height_barber(node):
-#     # height measured as number of levels (root at level 1)
-#     if node is None:
-#         return 0
-#     if node.is_leaf:
-#         return 1
-#     return 1 + height_barber(node.children[0])
-
-
-# def degree_barber(node):
-#     # maximum number of children among nodes (i.e., max degree)
-#     if node is None:
-#         return 0
-#     current_children = len([c for c in node.children if c is not None])
-#     max_child = current_children
-#     for c in node.children:
-#         if c is not None:
-#             max_child = max(max_child, degree_barber(c))
-#     return max_child
-
-
-# def node_count_barber(node):
-#     if node is None:
-#         return 0
-#     cnt = 1
-#     for c in node.children:
-#         if c is not None:
-#             cnt += node_count_barber(c)
-#     return cnt
-
-
-# def density_barber(node):
-#     h = height_barber(node)
-#     n = node_count_barber(node)
-#     return float(n) / float(h) if h > 0 else 0.0
-
-
-# # ----------------- Flask app state -----------------
-# order_barber = None  # will hold m (order)
-# root_barber = None   # root NodeBArber
-
-
-# # ----------------- Flask routes -----------------
-# @app.route("/B_arber/set_order", methods=["POST"])
-# def set_order_barber():
-#     global order_barber, root_barber
-#     data = request.json or {}
-#     try:
-#         m = int(data.get("order"))
-#     except Exception:
-#         return jsonify({"error": "Order must be an integer."}), 400
-#     # require odd and >= 3 (m = 2*d + 1)
-#     if m < 3 or m % 2 == 0:
-#         return jsonify({"error": "Order must be odd and >= 3 (m = 2*d + 1)."}), 400
-#     order_barber = m
-#     root_barber = None
-#     return jsonify({"message": f"Ordre fixé à {order_barber}"})
-
-
-# @app.route("/B_arber/insert", methods=["POST"])
-# def insert_value_barber():
-#     global root_barber, order_barber
-#     if order_barber is None:
-#         return jsonify({"error": "Ordre non défini"}), 400
-#     data = request.json or {}
-#     try:
-#         value = int(data.get("value"))
-#     except Exception:
-#         return jsonify({"error": "Value must be an integer."}), 400
-#     try:
-#         root_barber = insert_barber(root_barber, value, order_barber)
-#         return jsonify(to_dict_barber(root_barber))
-#     except Exception as e:
-#         # defensive: return error message and 500
-#         print("Error inserting value:", e)
-#         return jsonify({"error": str(e)}), 500
-
-
-# @app.route("/B_arber/reset", methods=["POST"])
-# def reset_barber():
-#     global root_barber
-#     root_barber = None
-#     return jsonify({"message": "B-arbre réinitialisé"})
-
-
-# @app.route("/B_arber/info", methods=["GET"])
-# def get_info_barber():
-#     global root_barber
-#     if root_barber is None:
-#         return jsonify({"height": 0, "degree": 0, "density": 0.0})
-#     try:
-#         info = {
-#             "height": height_barber(root_barber),
-#             "degree": degree_barber(root_barber),
-#             "density": density_barber(root_barber),
-#         }
-#         return jsonify(info)
-#     except Exception as e:
-#         print("Error in /B_arber/info:", e)
-#         return jsonify({"error": str(e)}), 500
-
-
-# @app.route("/B_arber/tree", methods=["GET"])
-# def get_tree_barber():
-#     global root_barber
-#     if root_barber is None:
-#         return jsonify(None)
-#     return jsonify(to_dict_barber(root_barber))
-
-
-
-
-
-# # -------------------- Main --------------------
-# if __name__ == "__main__":
-#     app.run(debug=True, port=5000)
+# ---------------- Floyd -------------
+
+
+# ------------ Floyd-Warshall Algorithm ---------------
+
+floyd_steps = []
+floyd_graph = {} 
+
+# Helper function to convert Infinity to None for JSON serialization
+def prepare_matrix_for_json(matrix):
+    if not matrix:
+        return None
+    return [[None if cell == float('inf') else cell for cell in row] for row in matrix]
+
+@app.route("/floyd/upload", methods=["POST"])
+def upload_file_floyd():
+    global floyd_graph, floyd_steps
+    
+    try:
+        file = request.files["file"]
+        content = file.read().decode("utf-8")
+        
+        # 1. Parse the file strictly respecting the format [[a,b][w]]
+        # We replace brackets with spaces to make it a long string of values
+        cleaned = content.replace("[", " ").replace("]", " ").replace(",", " ")
+        
+        # Split by whitespace. This preserves negative signs (e.g. "-2")
+        all_values = cleaned.split()
+        
+        edges = []
+        i = 0
+        while i + 2 < len(all_values):
+            a = all_values[i]
+            b = all_values[i + 1]
+            try:
+                # Ensure weight is a float/int, handling negative numbers
+                poids = float(all_values[i + 2])
+                edges.append((a, b, poids))
+            except ValueError:
+                pass # Skip if parsing fails
+            i += 3
+        
+        # 2. Initialize graph
+        floyd_graph = {}
+        
+        # Ensure all nodes exist in the dictionary keys first
+        for a, b, poids in edges:
+            if a not in floyd_graph: floyd_graph[a] = []
+            if b not in floyd_graph: floyd_graph[b] = []
+
+        # 3. Add Directed Edges
+        # We do NOT force back-edges here. If the user wants A<->B, 
+        # they must provide [[a,b][w1]] and [[b,a][w2]]
+        for a, b, poids in edges:
+            # Check for duplicates to prevent array bloat
+            existing = next((x for x in floyd_graph[a] if x[0] == b), None)
+            if existing:
+                # Update weight if edge exists (or keep first, depending on preference)
+                floyd_graph[a].remove(existing)
+            floyd_graph[a].append((b, poids))
+        
+        floyd_steps = []
+        
+        return jsonify({
+            "message": "Graph uploaded successfully!",
+            "graph": floyd_graph
+        })
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Error uploading file: {str(e)}"}), 500
+
+@app.route("/floyd/get", methods=["GET"])
+def get_floyd_graph():
+    global floyd_graph
+    if not floyd_graph:
+        return jsonify({"error": "No graph available."})
+    return jsonify({"graph": floyd_graph})
+
+@app.route("/floyd/execute", methods=["GET"])
+def execute_floyd():
+    global floyd_graph, floyd_steps
+    try:
+        if not floyd_graph:
+            return jsonify({"error": "No graph available."})
+
+        floyd_steps = []
+        nodes = sorted(list(floyd_graph.keys())) # Sort nodes for consistent matrix order
+        n = len(nodes)
+        
+        node_index = {node: i for i, node in enumerate(nodes)}
+        
+        # Initialize distance matrix
+        distance = [[float('inf')] * n for _ in range(n)]
+        for i in range(n):
+            distance[i][i] = 0
+        
+        # Initialize path matrix (Predecessor matrix)
+        path = [[None] * n for _ in range(n)]
+        for i in range(n):
+            for j in range(n):
+                if i != j:
+                    path[i][j] = i # Initially, predecessor is the start node
+        
+        # Fill based on Graph connections
+        for node in floyd_graph:
+            for neighbor, weight in floyd_graph[node]:
+                i = node_index[node]
+                j = node_index[neighbor]
+                # If multiple edges defined, take the smallest weight
+                if weight < distance[i][j]:
+                    distance[i][j] = weight
+        
+        # Step 0: Initial State
+        floyd_steps.append({
+            "type": "initialization",
+            "distance_matrix": prepare_matrix_for_json(distance),
+            "path_matrix": prepare_matrix_for_json(path),
+            "message": "Initial Matrix (k=0)"
+        })
+        
+        # Floyd-Warshall Algorithm
+        for k in range(n):
+            # We want to show the matrix *after* processing node k
+            
+            for i in range(n):
+                for j in range(n):
+                    if distance[i][k] != float('inf') and distance[k][j] != float('inf'):
+                        new_dist = distance[i][k] + distance[k][j]
+                        if new_dist < distance[i][j]:
+                            distance[i][j] = new_dist
+                            path[i][j] = path[k][j] # Standard FW path reconstruction
+            
+            # --- SNAPSHOT HERE ---
+            # Capture state only once per iteration of K
+            floyd_steps.append({
+                "type": "iteration_end",
+                "k": k,
+                "intermediate_node": nodes[k],
+                "distance_matrix": prepare_matrix_for_json(distance),
+                "path_matrix": prepare_matrix_for_json(path),
+                "message": f"End of Iteration {k+1} (Intermediate Node: {nodes[k]})"
+            })
+        
+        return jsonify({
+            "steps": floyd_steps,
+            "final_distance_matrix": prepare_matrix_for_json(distance),
+            "final_path_matrix": prepare_matrix_for_json(path)
+        })
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": f"Error executing Floyd's algorithm: {str(e)}"}), 500
+
+
+
+# ---------------- Welsh-Powell ----------------
+
+# Store data in memory
+welsh_powell_graph = {}
+welsh_powell_steps = []
+
+@app.route("/", methods=["GET"])
+def server_status():
+    return jsonify({"status": "online"})
+
+@app.route("/welsh_powell/upload", methods=["POST", "OPTIONS"])
+def upload_file_welsh_powell():
+    global welsh_powell_graph, welsh_powell_steps
+    
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "No file part in the request"}), 400
+            
+        file = request.files["file"]
+        if file.filename == '':
+            return jsonify({"error": "No file selected"}), 400
+            
+        content = file.read().decode("utf-8")
+        print(f"--- FILE CONTENT RECEIVED ---\n{content}\n---------------------------")
+        
+        # Parse the file - this is the key fix
+        # We need to properly parse the format [[A,B][2]],[[A,E][2]] etc.
+        import re
+        
+        # Use regex to extract node pairs
+        pattern = r'\[\[([A-Z]),([A-Z])\]\[[0-9]+\]\]'
+        matches = re.findall(pattern, content)
+        
+        edges = []
+        for match in matches:
+            a, b = match
+            edges.append((a, b))
+        
+        print(f"PARSED EDGES: {edges}")
+        
+        # Initialize graph
+        welsh_powell_graph = {}
+        
+        # Ensure all nodes exist in the dictionary keys first
+        for a, b in edges:
+            if a not in welsh_powell_graph: welsh_powell_graph[a] = []
+            if b not in welsh_powell_graph: welsh_powell_graph[b] = []
+
+        # Add Undirected Edges
+        for a, b in edges:
+            # Check for duplicates
+            if b not in welsh_powell_graph[a]:
+                welsh_powell_graph[a].append(b)
+            if a not in welsh_powell_graph[b]:
+                welsh_powell_graph[b].append(a)
+        
+        print(f"FINAL GRAPH STRUCTURE: {welsh_powell_graph}")
+        welsh_powell_steps = []
+        
+        return jsonify({
+            "message": "Graph uploaded successfully!",
+            "graph": welsh_powell_graph
+        })
+    except Exception as e:
+        print(f"Error in upload: {str(e)}")
+        return jsonify({"error": f"Error uploading file: {str(e)}"}), 500
+
+@app.route("/welsh_powell/get", methods=["GET"])
+def get_welsh_powell_graph():
+    global welsh_powell_graph
+    if not welsh_powell_graph:
+        return jsonify({"error": "No graph available."})
+    return jsonify({"graph": welsh_powell_graph})
+
+@app.route("/welsh_powell/execute", methods=["GET"])
+def execute_welsh_powell():
+    global welsh_powell_graph, welsh_powell_steps
+    
+    if not welsh_powell_graph:
+        return jsonify({"error": "No graph loaded"}), 400
+    
+    # Clear previous steps
+    welsh_powell_steps = []
+    
+    # Get nodes and their degrees
+    nodes = list(welsh_powell_graph.keys())
+    degrees = {node: len(welsh_powell_graph[node]) for node in nodes}
+    
+    # Sort nodes by degree (descending)
+    sorted_nodes = sorted(nodes, key=lambda x: degrees[x], reverse=True)
+    
+    # Initialize coloring
+    coloring = {}
+    colors_used = 0
+    
+    # Welsh-Powell algorithm
+    for node in sorted_nodes:
+        # Get colors of neighbors
+        neighbor_colors = set()
+        for neighbor in welsh_powell_graph[node]:
+            if neighbor in coloring:
+                neighbor_colors.add(coloring[neighbor])
+        
+        # Assign the smallest available color
+        for color in range(colors_used):
+            if color not in neighbor_colors:
+                coloring[node] = color
+                break
+        else:
+            # If no existing color works, use a new one
+            coloring[node] = colors_used
+            colors_used += 1
+        
+        # Record step
+        welsh_powell_steps.append({
+            "sorted_nodes": sorted_nodes,
+            "degrees": degrees,
+            "coloring": coloring.copy(),
+            "last_colored": node,
+            "message": f"Colored node {node} with color {coloring[node]}"
+        })
+    
+    return jsonify({
+        "steps": welsh_powell_steps,
+        "coloring": coloring
+    })
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)

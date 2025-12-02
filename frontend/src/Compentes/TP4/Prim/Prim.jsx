@@ -279,11 +279,6 @@ const Prim = () => {
               >
                 Step Forward
               </button>
-              <div className="flex-1 text-center">
-                <span className="text-lg font-medium">
-                  {steps.length > 0 ? `Step ${currentStep + 1} of ${steps.length}` : "No steps available"}
-                </span>
-              </div>
             </div>
             
             {steps.length > 0 && (
@@ -296,9 +291,9 @@ const Prim = () => {
             )}
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-semibold text-green-700 mb-4">Graph Visualization</h2>
+              <h2 className="text-2xl font-semibold text-green-700 mb-4 text-center">Graph</h2>
               <div className="flex justify-center">
                 <canvas
                   ref={canvasRef}
@@ -307,6 +302,9 @@ const Prim = () => {
                   className="border border-gray-300 rounded-lg"
                 />
               </div>
+            </div>
+          </div>
+
               
               {steps.length > 0 && steps[currentStep]?.type === "complete" && (
                 <div className="mt-6 bg-green-100 rounded-lg p-4">
@@ -327,74 +325,8 @@ const Prim = () => {
                 </div>
               )}
             </div>
-            
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-semibold text-green-700 mb-4">Algorithm Steps</h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Step
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Edge Considered
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Visited Nodes
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        MST Edges
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Total Weight
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {steps.map((step, index) => (
-                      <tr 
-                        key={index} 
-                        className={index === currentStep ? "bg-green-100" : ""}
-                      >
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {index + 1}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {step.edge ? `${step.edge[0]}-${step.edge[1]}(${step.edge[2]})` : 
-                           step.type === "start" ? "Start" : "None"}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {step.visited ? step.visited.join(", ") : ""}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-500">
-                          <div className="max-w-xs truncate" title={formatTreeEdges(step.tree_edges)}>
-                            {formatTreeEdges(step.tree_edges)}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {calculateCumulativeWeight(index)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              
-              {steps.length > 0 && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-2">Algorithm Explanation:</h3>
-                  <p className="text-gray-700">
-                    Prim's algorithm grows a minimum spanning tree one edge at a time. 
-                    It starts from an arbitrary node and repeatedly adds the cheapest 
-                    edge that connects a node in the tree to a node outside the tree.
-                  </p>
-                </div>
-              )}
-            </div>
           </div>
-        </div>
-      </div>
+
     </>
   );
 };

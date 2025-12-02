@@ -2,7 +2,7 @@ import {BrowserRouter as Router,Route,Routes} from 'react-router-dom'
 import './App.css';
 import {Home , ABR , AVL , TASMAX , TASMIN  , GrapheNonOr , GrapheOriente ,
   GraphePondere , GrapheNonPondere , HomePageOfTPOne , HomePageOfTP2 , HomePageOfTP3 , TriABR,
-  TriAVL , TriTASMAX , TriTasMin , TriBitonique , HomePageOfTP4 , Prim , Kruskal
+  TriAVL , TriTASMAX , TriTasMin , TriBitonique , HomePageOfTP4 , Prim , Kruskal , Floyd , WelshPowell
 
 
 } from './Compentes/index';
@@ -37,6 +37,8 @@ function App() {
             <Route path='/tp4' element={<HomePageOfTP4/>}/>
             <Route path='/tp4/prim' element={<Prim/>}/>
             <Route path='/tp4/kruskal' element={<Kruskal/>}/>
+            <Route path='/tp4/floyd' element={<Floyd/>}/>
+            <Route path='/tp4/welsh_powell' element={<WelshPowell/>}/>
 
             {/*<Route path='/tp3' element={<h1>TP3 Page</h1>}/>
             <Route path='/tp5' element={<h1>TP5 Page</h1>}/>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {NavBar} from '../../index';
+
 const HomePageOfTP4 = ({ onUploadComplete }) => {
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -18,6 +19,10 @@ const HomePageOfTP4 = ({ onUploadComplete }) => {
         ? "http://127.0.0.1:5000/prim/upload"
         : type === "Kruskal"
         ? "http://127.0.0.1:5000/Kruskal/upload"
+        : type === "floyd"
+        ? "http://127.0.0.1:5000/floyd/upload"
+        : type === "welsh_powell"
+        ? "http://127.0.0.1:5000/welsh_powell/upload"
         : null;
 
     if (!url) return alert("Unknown type");
@@ -27,13 +32,25 @@ const HomePageOfTP4 = ({ onUploadComplete }) => {
         method: "POST",
         body: formData,
       });
+      
+      // Check if response is ok
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
+      
+      // Check content type to ensure we're getting JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server did not return JSON. Check if the server is running correctly.");
+      }
+      
       const data = await response.json();
       alert("File uploaded successfully!");
       console.log("Server response:", data);
       if (onUploadComplete) onUploadComplete();
     } catch (error) {
       console.error("Error uploading file:", error);
-      alert("Upload failed");
+      alert(`Upload failed: ${error.message}`);
     }
   };
 
@@ -53,7 +70,7 @@ const HomePageOfTP4 = ({ onUploadComplete }) => {
         >
         Upload File
         </button>
-    </div>
+      </div>
 
       <h1 className="text-4xl font-bold text-green-700 mb-12 text-center">
         ACM
@@ -77,6 +94,23 @@ const HomePageOfTP4 = ({ onUploadComplete }) => {
           </a>
         </button>
 
+        <button onClick={() => handleUpload("floyd")}>
+          <a
+            href="/tp4/floyd"
+            className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
+          >
+            Floyd
+          </a>
+        </button>
+
+        <button onClick={() => handleUpload("welsh_powell")}>
+          <a
+            href="/tp4/welsh_powell"
+            className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
+          >
+            Welsh-Powell
+          </a>
+        </button>
         </div>
     </div>
     </>

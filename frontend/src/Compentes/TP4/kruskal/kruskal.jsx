@@ -284,26 +284,13 @@ const Kruskal = () => {
               >
                 Step Forward
               </button>
-              <div className="flex-1 text-center">
-                <span className="text-lg font-medium">
-                  {steps.length > 0 ? `Step ${currentStep + 1} of ${steps.length}` : "No steps available"}
-                </span>
-              </div>
             </div>
-            
-            {steps.length > 0 && (
-              <div className="bg-gray-100 rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-2">Current Step:</h3>
-                <p className="text-gray-700">
-                  {steps[currentStep]?.message || "No step selected"}
-                </p>
-              </div>
-            )}
+
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-semibold text-green-700 mb-4">Graph Visualization</h2>
+              <h2 className="text-2xl font-semibold text-green-700 mb-4">Graph</h2>
               <div className="flex justify-center">
                 <canvas
                   ref={canvasRef}
@@ -332,81 +319,9 @@ const Kruskal = () => {
                 </div>
               )}
             </div>
-            
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-semibold text-green-700 mb-4">Algorithm Steps</h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Step
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Edge Considered
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Action
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        MST Edges
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Total Weight
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {getStepsToDisplay().map((step, index) => (
-                      <tr 
-                        key={index} 
-                        className={
-                          index === currentStep 
-                            ? "bg-green-100 animate-pulse" 
-                            : index < currentStep 
-                              ? "bg-green-50" 
-                              : ""
-                        }
-                      >
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {index + 1}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {step.edge ? `${step.edge[0]}-${step.edge[1]}(${step.edge[2]})` : 
-                           step.type === "start" ? "Start" : "None"}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {step.type === "add_edge" ? "Added" : 
-                           step.type === "skip_edge" ? "Skipped (Cycle)" : 
-                           step.type === "start" ? "Initialization" : "N/A"}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-500">
-                          <div className="max-w-xs truncate" title={formatTreeEdges(step.tree_edges)}>
-                            {formatTreeEdges(step.tree_edges)}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {calculateCumulativeWeight(index)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              
-              {steps.length > 0 && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-2">Algorithm Explanation:</h3>
-                  <p className="text-gray-700">
-                    Kruskal's algorithm builds a minimum spanning tree by adding edges in order of increasing weight. 
-                    It adds an edge only if it doesn't create a cycle, using a disjoint-set data structure to track connected components.
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         </div>
-      </div>
     </>
   );
 };
