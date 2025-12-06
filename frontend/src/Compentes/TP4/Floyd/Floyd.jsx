@@ -13,7 +13,7 @@ const Floyd = () => {
   const fetchGraphData = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://127.0.0.1:5000/floyd/get");
+      const response = await fetch("https://tp-algo-j0wl.onrender.com/floyd/get");
       const data = await response.json();
       if (data.error) throw new Error(data.error);
       setGraph(data.graph);
