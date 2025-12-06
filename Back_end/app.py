@@ -2,8 +2,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://tp-algo-1-0g5g.onrender.com/"}})
-# CORS(app)
+# CORS(app, resources={r"/*": {"origins": "https://tp-algo-1-0g5g.onrender.com/"}})
+CORS(app)
 # @app.route("/")
 
 # ------------------------------------------    TP1     -------------------------------------
@@ -1713,7 +1713,7 @@ def get_kruskal_steps():
 # ------------ Floyd-Warshall Algorithm ---------------
 
 floyd_steps = []
-floyd_graph = {} 
+floyd_graph = {}
 
 # Helper function to convert Infinity to None for JSON serialization
 def prepare_matrix_for_json(matrix):
