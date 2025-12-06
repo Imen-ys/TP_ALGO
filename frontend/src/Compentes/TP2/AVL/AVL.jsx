@@ -12,9 +12,10 @@ const AVL = () => {
   const [searchResult, setSearchResult] = useState(null);
   const [deleteMessage, setDeleteMessage] = useState(null);
 
+  const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
   const fetchTree = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:5000/avl/show");
+      const res = await fetch(`${BACKEND_URL}/avl/show`);
       const data = await res.json();
       setTreeData(data);
     } catch (err) {
@@ -24,7 +25,7 @@ const AVL = () => {
 
   const fetchInfo = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:5000/avl/info");
+      const res = await fetch(`${BACKEND_URL}/avl/info`);
       const data = await res.json();
       setInfo(data);
     } catch (err) {
@@ -39,7 +40,7 @@ const AVL = () => {
     }
     
     try {
-      const res = await fetch("http://127.0.0.1:5000/avl/delete", {
+      const res = await fetch(`${BACKEND_URL}/avl/delete`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,7 +52,6 @@ const AVL = () => {
       if (data.success) {
         setTreeData(data.tree);
         setDeleteMessage(data.message);
-        // Refresh info after deletion
         fetchInfo();
       } else {
         setDeleteMessage(data.message);
@@ -68,7 +68,7 @@ const AVL = () => {
     }
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/avl/search", {
+      const res = await fetch(`${BACKEND_URL}/avl/search`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -109,7 +109,6 @@ const AVL = () => {
         Rafraîchir l'arbre
       </button>
 
-      {/* Delete Section */}
       <div className="bg-white p-4 rounded-xl shadow w-80 mb-6">
         <h2 className="text-xl font-semibold text-green-700 mb-4">
           Supprimer une valeur
@@ -136,7 +135,6 @@ const AVL = () => {
         )}
       </div>
 
-      {/* Search Section */}
       <div className="bg-white p-4 rounded-xl shadow w-80 mb-6">
         <h2 className="text-xl font-semibold text-green-700 mb-4">
           Rechercher une valeur
@@ -163,7 +161,6 @@ const AVL = () => {
         )}
       </div>
 
-      {/* Info Section */}
       {info && (
         <div className="bg-white p-4 rounded-xl shadow w-80 text-center mb-6">
           <h2 className="text-2xl font-semibold text-green-700 mb-4">
@@ -189,7 +186,6 @@ const AVL = () => {
         <p className="text-red-500">{error}</p>
       ) : (
         <>
-          {/* Visual Tree Section */}
           {treeData ? (
             <div className="bg-white p-4 rounded-xl shadow w-full h-[500px] flex items-center justify-center mb-8">
               <Tree

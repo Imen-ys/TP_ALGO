@@ -12,22 +12,21 @@ const ABR = () => {
   const [searchResult, setSearchResult] = useState(null);
   const [deleteResult, setDeleteResult] = useState(null);
 
+  const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
 
-  // Calls Flask route /abr/show to get the current ABR tree.
   const fetchTree = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:5000/abr/show");
-      const data = await res.json(); // converts the JSON response into a JavaScript object.
-      setTreeData(data); // saves the tree structure into state.
+      const res = await fetch(`${BACKEND_URL}/abr/show`);
+      const data = await res.json();
+      setTreeData(data);
     } catch (err) {
       setError("Erreur lors du chargement de l'arbre");
     }
   };
 
-  // Calls /abr/info for tree statistics (height, degree, density).
   const fetchInfo = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:5000/abr/info");
+      const res = await fetch(`${BACKEND_URL}/abr/info`);
       const data = await res.json();
       setInfo(data);
     } catch (err) {
@@ -36,25 +35,24 @@ const ABR = () => {
   };
 
   useEffect(() => {
-    //Promise.all means both happen at the same time
     Promise.all([fetchTree(), fetchInfo()]).finally(() => setLoading(false));
   }, []);
 
   const handleRefresh = async () => {
-    setLoading(true); // It sets loading to true (to show loading spinner or message)
-    await Promise.all([fetchTree(), fetchInfo()]); // It reloads both the tree and its info.
-    setLoading(false); // Finally, it sets loading to false.
+    setLoading(true);
+    await Promise.all([fetchTree(), fetchInfo()]);
+    setLoading(false);
   };
 
   const handleSearch = async () => {
-    if (!searchValue) return; // If searchValue is empty, it stops.
+    if (!searchValue) return;
     try {
-      const response = await fetch("http://127.0.0.1:5000/abr/search", { // Sends a POST request to /abr/search.
+      const response = await fetch(`${BACKEND_URL}/abr/search`, { 
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ value: parseInt(searchValue) }), // Sends the value inside the body as JSON
+        body: JSON.stringify({ value: parseInt(searchValue) }), 
       });
       const data = await response.json();
       setSearchResult(data);
@@ -64,12 +62,11 @@ const ABR = () => {
     }
   };
 
-  // NEW: Handle delete
   const handleDelete = async () => {
     if (!deleteValue) return;
     
     try {
-      const response = await fetch("http://127.0.0.1:5000/abr/delete", {
+      const response = await fetch(`${BACKEND_URL}/abr/delete`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,7 +76,6 @@ const ABR = () => {
       const data = await response.json();
       setDeleteResult(data);
       
-      // If deletion was successful, refresh the tree
       if (data.success) {
         await fetchTree();
         await fetchInfo();
@@ -107,7 +103,6 @@ const ABR = () => {
         Rafraîchir l'arbre
       </button>
 
-      {/* NEW: Search Section */}
       <div className="bg-white p-4 rounded-xl shadow w-80 mb-4">
         <h2 className="text-xl font-semibold text-green-700 mb-4">
           Rechercher une valeur
@@ -134,7 +129,7 @@ const ABR = () => {
         )}
       </div>
 
-      {/* NEW: Delete Section */}
+
       <div className="bg-white p-4 rounded-xl shadow w-80 mb-4">
         <h2 className="text-xl font-semibold text-green-700 mb-4">
           Supprimer une valeur
@@ -161,7 +156,6 @@ const ABR = () => {
         )}
       </div>
 
-      {/* ℹ️ Info Section */}
       {info && (
         <div className="bg-white p-4 rounded-xl shadow w-80 text-center mb-4">
           <h2 className="text-2xl font-semibold text-green-700 mb-4">
@@ -187,7 +181,6 @@ const ABR = () => {
         <p className="text-red-500">{error}</p>
       ) : (
         <>
-          {/* Visual Tree Section */}
           {treeData ? (
             <div className="bg-white p-4 rounded-xl shadow w-full h-[500px] flex items-center justify-center mb-8">
               <Tree

@@ -12,12 +12,12 @@ const TASMAX = () => {
   const [searchValue, setSearchValue] = useState("");
   const [searchResult, setSearchResult] = useState(null);
   const [deleteMessage, setDeleteMessage] = useState(null);
+    const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
 
  const fetchTree = async () => {
   try {
-    const res = await fetch("http://127.0.0.1:5000/tasmax/show");
+    const res = await fetch(`${BACKEND_URL}/tasmax/show`);
     const data = await res.json();
-    // backend returns { tree: ... }
     setTreeData(data.tree ?? data);
   } catch (err) {
     setError("Erreur lors du chargement de l'arbre");
@@ -26,7 +26,7 @@ const TASMAX = () => {
 
 const fetchInfo = async () => {
   try {
-    const res = await fetch("http://127.0.0.1:5000/tasmax/info");
+    const res = await fetch(`${BACKEND_URL}/tasmax/info`);
     const data = await res.json();
     setInfo(data);
   } catch (err) {
@@ -41,16 +41,14 @@ const handleDelete = async () => {
   }
   
   try {
-    const res = await fetch("http://127.0.0.1:5000/tasmax/delete", {
+    const res = await fetch(`${BACKEND_URL}/tasmax/delete`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ value: parseInt(deleteValue, 10) }),
     });
     const data = await res.json();
-    // backend returns success boolean + tree
     setDeleteMessage({ text: data.message, success: !!data.success });
     if (data.tree) setTreeData(data.tree);
-    // Refresh info
     fetchInfo();
   } catch (err) {
     setDeleteMessage({ text: "Erreur lors de la suppression de la valeur", success: false });
@@ -64,7 +62,7 @@ const handleSearch = async () => {
   }
   
   try {
-    const res = await fetch("http://127.0.0.1:5000/tasmax/search", {
+    const res = await fetch(`${BACKEND_URL}/tasmax/search`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ value: parseInt(searchValue, 10) }),
@@ -181,7 +179,6 @@ const handleSearch = async () => {
         <p className="text-red-500">{error}</p>
       ) : (
         <>
-          {/*  Visual Tree Section */}
           {treeData && treeData.name ? (
             <div className="bg-white p-4 rounded-xl shadow w-full h-[500px] flex items-center justify-center mb-8">
               <Tree

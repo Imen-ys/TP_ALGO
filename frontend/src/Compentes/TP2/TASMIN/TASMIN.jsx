@@ -12,10 +12,11 @@ const TASMIN = () => {
   const [searchValue, setSearchValue] = useState("");
   const [searchResult, setSearchResult] = useState(null);
   const [deleteResult, setDeleteResult] = useState(null);
+  const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
 
  const fetchTree = async () => {
   try {
-    const res = await fetch("http://127.0.0.1:5000/tasmin/show");
+    const res = await fetch(`${BACKEND_URL}/tasmin/show`);
     const data = await res.json();
     setTreeData(data);
     setError(null);
@@ -27,7 +28,7 @@ const TASMIN = () => {
 
   const fetchInfo = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:5000/tasmin/info");
+      const res = await fetch(`${BACKEND_URL}/tasmin/info`);
       const data = await res.json();
       setInfo(data);
     } catch (err) {
@@ -42,7 +43,7 @@ const handleDelete = async () => {
   }
 
   try {
-    const response = await fetch("http://127.0.0.1:5000/tasmin/delete", {
+    const response = await fetch(`${BACKEND_URL}/tasmin/delete`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -53,11 +54,8 @@ const handleDelete = async () => {
     
     if (response.ok) {
       setDeleteResult({ success: true, message: data.message });
-      // Force a complete refresh of the tree data
       await fetchTree();
-      // Refresh info after deletion
       await fetchInfo();
-      // Clear the delete input
       setDeleteValue("");
     } else {
       setDeleteResult({ success: false, message: data.error });
@@ -74,7 +72,7 @@ const handleDelete = async () => {
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/tasmin/search", {
+      const response = await fetch(`${BACKEND_URL}/tasmin/search`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -121,7 +119,6 @@ const handleDelete = async () => {
         Rafraîchir l'arbre
       </button>
 
-      {/* Delete and Search Section */}
       <div className="flex flex-wrap gap-4 mb-6 justify-center">
         <div className="bg-white p-4 rounded-xl shadow">
           <h3 className="text-lg font-semibold text-green-700 mb-2">Supprimer une valeur</h3>
@@ -172,7 +169,6 @@ const handleDelete = async () => {
         </div>
       </div>
 
-      {/* Info Section */}
       {info && (
         <div className="bg-white p-4 rounded-xl shadow w-80 text-center mb-6">
           <h2 className="text-2xl font-semibold text-green-700 mb-4">
@@ -198,7 +194,6 @@ const handleDelete = async () => {
         <p className="text-red-500">{error}</p>
       ) : (
         <>
-          {/* Visual Tree Section */}
           {treeData ? (
             <div className="bg-white p-4 rounded-xl shadow w-full h-[500px] flex items-center justify-center mb-8">
               <Tree
@@ -210,7 +205,7 @@ const handleDelete = async () => {
                 pathFunc="elbow"
                 styles={{
                   links: {
-                    stroke: "#16a34a", // green
+                    stroke: "#16a34a",
                     strokeWidth: 2,
                   },
                   nodes: {
