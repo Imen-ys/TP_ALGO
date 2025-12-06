@@ -3,12 +3,13 @@ import { Network } from "vis-network/standalone";
 import { NavBar, HomePageOfTPOne } from "../../index";
 
 const GraphePondere = () => {
+  const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
   const containerRef = useRef(null);
   const networkRef = useRef(null);
   const [graphData, setGraphData] = useState(null);
 
   const fetchGraph = async () => {
-    const res = await fetch("http://127.0.0.1:5000/graphePondere/get");
+    const res = await fetch(`${BACKEND_URL}/graphePondere/get`);
     const data = await res.json();
     const graph = data.graph;
 

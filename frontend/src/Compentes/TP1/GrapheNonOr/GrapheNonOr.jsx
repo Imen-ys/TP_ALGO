@@ -3,12 +3,13 @@ import { Network } from "vis-network/standalone";
 import { NavBar, HomePageOfTPOne } from "../../index";
 
 const GrapheNonOriente = () => {
+  const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
   const containerRef = useRef(null);
   const networkRef = useRef(null);
   const [graphData, setGraphData] = useState(null);
 
   const fetchGraph = async () => {
-    const res = await fetch("http://127.0.0.1:5000/grapheNonOriente/get");
+    const res = await fetch(`${BACKEND_URL}/grapheNonOriente/get`);
     const data = await res.json();
     const graph = data.graph;
 

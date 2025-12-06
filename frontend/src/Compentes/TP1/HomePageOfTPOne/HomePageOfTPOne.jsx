@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {NavBar} from '../../index';
 const HomePageOfTPOne = ({ onUploadComplete }) => {
-        const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
+  const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
   const [selectedFile, setSelectedFile] = useState(null);
 
   const handleFileChange = (e) => {

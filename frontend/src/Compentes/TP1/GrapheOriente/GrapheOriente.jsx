@@ -8,7 +8,8 @@ const GrapheOriente = () => {
   const [graphData, setGraphData] = useState(null);
 
   const fetchGraph = async () => {
-    const res = await fetch("http://127.0.0.1:5000/grapheOriente/get");
+    const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
+    const res = await fetch(`${BACKEND_URL}/grapheOriente/get`);
     const data = await res.json();
     const graph = data.graph;
 
