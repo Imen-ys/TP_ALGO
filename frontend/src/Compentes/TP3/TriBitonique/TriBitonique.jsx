@@ -94,11 +94,29 @@ const Tribitonique = () => {
         transition: 'all 0.3s ease'
       };
     }
+    
+    // Special styling for Infinity values
+    if (steps[currentStep].array[index] === "Infinity") {
+      return {
+        backgroundColor: '#fbbf24',
+        color: '#78350f',
+        fontWeight: 'bold',
+        transition: 'all 0.3s ease'
+      };
+    }
+    
     return {
       backgroundColor: '#d1fae5',
       color: '#065f46',
       transition: 'all 0.3s ease'
     };
+  };
+
+  const formatNumber = (num) => {
+    if (num === "Infinity") {
+      return "+∞";
+    }
+    return num.toString();
   };
 
   return (
@@ -201,7 +219,7 @@ const Tribitonique = () => {
                   className="px-3 py-1 rounded-md font-mono text-sm shadow"
                   style={getNumberStyle(i)}
                 >
-                  {num}
+                  {formatNumber(num)}
                 </span>
               ))}
             </div>
@@ -223,6 +241,10 @@ const Tribitonique = () => {
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ef4444' }}></div>
                 <span className="text-sm">Swapped</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#fbbf24' }}></div>
+                <span className="text-sm">Padding (+∞)</span>
               </div>
             </div>
           </div>

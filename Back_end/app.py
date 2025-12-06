@@ -4,6 +4,8 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
+# @app.route("/")
+
 # ------------------------------------------    TP1     -------------------------------------
 
 
@@ -1311,6 +1313,7 @@ def get_heap_at_step(step):
 # ---------------------------------- Tri Bitonique ---------------------------
 steps = []
 uploaded_numbers = []
+
 def compare_and_swap(arr, low, cnt, direction):
     if cnt > 1:
         k = cnt // 2
@@ -1318,20 +1321,25 @@ def compare_and_swap(arr, low, cnt, direction):
             if i + k < len(arr):
                 if (direction == 1 and arr[i] > arr[i + k]) or \
                     (direction == 0 and arr[i] < arr[i + k]):
+                    # Convert any Infinity values to strings for JSON compatibility
+                    array_copy = ["Infinity" if x == float('inf') else x for x in arr]
                     steps.append({
-                        "array": list(arr),
+                        "array": array_copy,
                         "swapped": [i, i + k],
                         "comparing": []
                     })
                     arr[i], arr[i + k] = arr[i + k], arr[i]
+                    array_copy = ["Infinity" if x == float('inf') else x for x in arr]
                     steps.append({
-                        "array": list(arr),
+                        "array": array_copy,
                         "swapped": [],
                         "comparing": []
                     })
                 else:
+                    # Convert any Infinity values to strings for JSON compatibility
+                    array_copy = ["Infinity" if x == float('inf') else x for x in arr]
                     steps.append({
-                        "array": list(arr),
+                        "array": array_copy,
                         "swapped": [],
                         "comparing": [i, i + k]
                     })
@@ -1352,41 +1360,59 @@ def bitonic_sort_recursive(arr, low, cnt, direction):
 
 def bitonic_sort(arr):
     n = len(arr)
+    # Find the next power of 2 greater than or equal to n
     power_of_2 = 1
     while power_of_2 < n:
         power_of_2 *= 2
-    if n == power_of_2:
+    
+    # Store original length to remove padding later
+    original_length = n
+    
+    # If n is not a power of 2, pad with +infinity
+    if n != power_of_2:
+        # Add initial state step before padding
+        array_copy = ["Infinity" if x == float('inf') else x for x in arr]
         steps.append({
-            "array": list(arr),
+            "array": array_copy,
             "swapped": [],
             "comparing": []
         })
-        bitonic_sort_recursive(arr, 0, n, 1)
-        return arr
-    largest_power_of_2 = 1
-    while largest_power_of_2 * 2 <= n:
-        largest_power_of_2 *= 2
-    steps.append({
-        "array": list(arr),
-        "swapped": [],
-        "comparing": []
-    })
-    bitonic_sort_recursive(arr, 0, largest_power_of_2, 1)
-    for i in range(largest_power_of_2, n):
-        j = i
-        while j > 0 and arr[j-1] > arr[j]:
-            steps.append({
-                "array": list(arr),
-                "swapped": [j-1, j],
-                "comparing": []
-            })
-            arr[j-1], arr[j] = arr[j], arr[j-1]
-            steps.append({
-                "array": list(arr),
-                "swapped": [],
-                "comparing": []
-            })
-            j -= 1
+        
+        # Pad with +infinity
+        arr.extend([float('inf')] * (power_of_2 - n))
+        
+        # Add a step to show the padding
+        array_copy = ["Infinity" if x == float('inf') else x for x in arr]
+        steps.append({
+            "array": array_copy,
+            "swapped": [],
+            "comparing": list(range(original_length, power_of_2))
+        })
+    
+    # Perform bitonic sort on the padded array
+    bitonic_sort_recursive(arr, 0, power_of_2, 1)
+    
+    # Remove the padding (if any)
+    if len(arr) > original_length:
+        # Add a step before removing padding
+        array_copy = ["Infinity" if x == float('inf') else x for x in arr]
+        steps.append({
+            "array": array_copy,
+            "swapped": [],
+            "comparing": list(range(original_length, len(arr)))
+        })
+        
+        # Remove the padding
+        arr = arr[:original_length]
+        
+        # Add final state step
+        array_copy = ["Infinity" if x == float('inf') else x for x in arr]
+        steps.append({
+            "array": array_copy,
+            "swapped": [],
+            "comparing": []
+        })
+    
     return arr
 
 # -------------------- ROUTES --------------------
@@ -1428,7 +1454,7 @@ def sort_uploaded_file():
         return jsonify({"error": "No file uploaded yet!"}), 400
 
     arr = uploaded_numbers.copy()
-    # Use the new bitonic_sort function that handles non-power-of-2 arrays
+    # Use the new bitonic_sort function that handles non-power-of-2 arrays with +infinity padding
     sorted_arr = bitonic_sort(arr)
     
     return jsonify({"steps": steps}), 200
@@ -1932,37 +1958,55 @@ def execute_welsh_powell():
     # Initialize coloring
     coloring = {}
     colors_used = 0
+    uncolored_nodes = sorted_nodes.copy()
     
     # Welsh-Powell algorithm
-    for node in sorted_nodes:
-        # Get colors of neighbors
-        neighbor_colors = set()
-        for neighbor in welsh_powell_graph[node]:
-            if neighbor in coloring:
-                neighbor_colors.add(coloring[neighbor])
+    while uncolored_nodes:
+        # Start with the highest degree uncolored node
+        current_color = colors_used
+        nodes_to_color = [uncolored_nodes[0]]
         
-        # Assign the smallest available color
-        for color in range(colors_used):
-            if color not in neighbor_colors:
-                coloring[node] = color
-                break
-        else:
-            # If no existing color works, use a new one
-            coloring[node] = colors_used
-            colors_used += 1
-        
-        # Record step
+        # Record initial step for this color
         welsh_powell_steps.append({
             "sorted_nodes": sorted_nodes,
             "degrees": degrees,
             "coloring": coloring.copy(),
-            "last_colored": node,
-            "message": f"Colored node {node} with color {coloring[node]}"
+            "last_colored": uncolored_nodes[0],
+            "message": f"Starting color {current_color} with node {uncolored_nodes[0]}"
         })
+        
+        # Find all nodes that can be colored with the current color
+        # (not adjacent to any node already colored with this color)
+        for node in uncolored_nodes[1:]:
+            can_color = True
+            for colored_node in nodes_to_color:
+                if node in welsh_powell_graph[colored_node]:
+                    can_color = False
+                    break
+            
+            if can_color:
+                nodes_to_color.append(node)
+        
+        # Color all the nodes that can take this color
+        for node in nodes_to_color:
+            coloring[node] = current_color
+            uncolored_nodes.remove(node)
+        
+        # Record step after coloring all nodes with this color
+        welsh_powell_steps.append({
+            "sorted_nodes": sorted_nodes,
+            "degrees": degrees,
+            "coloring": coloring.copy(),
+            "last_colored": nodes_to_color,
+            "message": f"Colored nodes {nodes_to_color} with color {current_color}"
+        })
+        
+        colors_used += 1
     
     return jsonify({
         "steps": welsh_powell_steps,
         "coloring": coloring
     })
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

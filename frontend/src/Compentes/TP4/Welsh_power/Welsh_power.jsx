@@ -158,6 +158,7 @@ const WelshPowell = () => {
     });
   };
 
+  // UPDATED: renderStepTable function
   const renderStepTable = (step) => {
     if (!step || !step.sorted_nodes) return null;
 
@@ -179,7 +180,11 @@ const WelshPowell = () => {
           </thead>
           <tbody>
             {step.sorted_nodes.map(node => (
-              <tr key={node} className={step.last_colored === node ? 'bg-yellow-100' : ''}>
+              <tr key={node} className={
+                Array.isArray(step.last_colored) 
+                  ? (step.last_colored.includes(node) ? 'bg-yellow-100' : '')
+                  : (step.last_colored === node ? 'bg-yellow-100' : '')
+              }>
                 <td className="border border-gray-300 p-2 font-medium">{node}</td>
                 <td className="border border-gray-300 p-2 text-center">{step.degrees[node]}</td>
                 {Array.from({ length: Math.max(4, maxColors) }, (_, i) => (
@@ -209,19 +214,9 @@ const WelshPowell = () => {
     <div className="min-h-screen bg-gray-50 p-6 font-sans">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-extrabold text-gray-800 mb-8 text-center tracking-tight">
-          Welsh-Powell Algorithm
+          Welsh-Powell
         </h1>
        
-        <div className={`p-4 rounded-lg mb-6 ${serverStatus === "online" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-          <p className="font-semibold">
-            Server Status: {serverStatus === "online" ? "Online" : "Offline"}
-          </p>
-          {serverStatus === "offline" && (
-            <p className="text-sm mt-1">
-              Please make sure the Flask server is running on port 5000.
-            </p>
-          )}
-        </div>
        
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-8 flex gap-4 items-center justify-center">
             <button 
@@ -229,14 +224,14 @@ const WelshPowell = () => {
                 disabled={loading || serverStatus !== "online"}
                 className="bg-emerald-600 text-white px-6 py-2 rounded-md hover:bg-emerald-700 transition font-medium shadow-sm flex items-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
-                <span>🔄</span> Refresh Graph
+                Refresh Graph
             </button>
             <button 
                 onClick={executeWelshPowell}
                 disabled={!graph || loading || serverStatus !== "online"}
                 className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition font-medium shadow-sm flex items-center gap-2"
             >
-                <span>▶</span> Run Algorithm
+                Run Algorithm
             </button>
         </div>
 
