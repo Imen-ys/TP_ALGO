@@ -9,6 +9,8 @@ const HomePageOfTP4 = ({ onUploadComplete }) => {
   };
 
   const handleUpload = async (type) => {
+      const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
+
     if (!selectedFile) return alert("Please select a file first!");
 
     const formData = new FormData();
@@ -20,7 +22,7 @@ const HomePageOfTP4 = ({ onUploadComplete }) => {
         : type === "Kruskal"
         ? "http://127.0.0.1:5000/Kruskal/upload"
         : type === "floyd"
-        ? "http://127.0.0.1:5000/floyd/upload"
+        ? `${BACKEND_URL}/floyd/upload`
         : type === "welsh_powell"
         ? "http://127.0.0.1:5000/welsh_powell/upload"
         : null;
