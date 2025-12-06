@@ -15,7 +15,7 @@ function App() {
           <Routes>
             <Route path='/' element={<Home/>}/>
 
-            <Route path='/tp1' element={<HomePageOfTPOne/>}/>
+<Route path='/tp1' element={<h1 style={{color:"red"}}>TP1 OK</h1>}/>
             <Route path='/tp1/graphe-non-oriente' element={<GrapheNonOr/>}/>
             <Route path='/tp1/graphe-oriente' element={<GrapheOriente/>}/>
             <Route path='/tp1/graphe-pondere' element={<GraphePondere/>}/>
