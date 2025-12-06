@@ -18,13 +18,13 @@ const HomePageOfTP4 = ({ onUploadComplete }) => {
 
     const url =
     type === "prim"
-        ? "http://127.0.0.1:5000/prim/upload"
+        ? `${BACKEND_URL}/prim/upload`
         : type === "Kruskal"
-        ? "http://127.0.0.1:5000/Kruskal/upload"
+        ? `${BACKEND_URL}/Kruskal/upload`
         : type === "floyd"
         ? `${BACKEND_URL}/floyd/upload`
         : type === "welsh_powell"
-        ? "http://127.0.0.1:5000/welsh_powell/upload"
+        ? `${BACKEND_URL}/welsh_powell/upload`
         : null;
 
     if (!url) return alert("Unknown type");

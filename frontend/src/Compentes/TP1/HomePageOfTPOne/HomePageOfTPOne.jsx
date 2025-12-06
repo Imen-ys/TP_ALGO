@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {NavBar} from '../../index';
 const HomePageOfTPOne = ({ onUploadComplete }) => {
+        const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
   const [selectedFile, setSelectedFile] = useState(null);
 
   const handleFileChange = (e) => {
@@ -15,13 +16,13 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
 
     const url =
       type === "grapheNonOriente"
-        ? "http://127.0.0.1:5000/grapheNonOriente/upload"
+        ? `${BACKEND_URL}/grapheNonOriente/upload`
         : type === "grapheOriente"
-        ? "http://127.0.0.1:5000/grapheOriente/upload"
+        ? `${BACKEND_URL}/grapheOriente/upload`
         : type === "grapheNonPondere"
-        ? "http://127.0.0.1:5000/grapheOriente/upload"
+        ? `${BACKEND_URL}/grapheOriente/upload`
         : type === "graphePondere"
-        ? "http://127.0.0.1:5000/graphePondere/upload"
+        ? `${BACKEND_URL}/graphePondere/upload`
         : null;
 
     if (!url) return alert("Unknown type");

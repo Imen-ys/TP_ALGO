@@ -2,7 +2,7 @@ import { useState } from "react";
 import {NavBar} from '../../index';
 const HomePageOfTP3 = ({ onUploadComplete }) => {
   const [selectedFile, setSelectedFile] = useState(null);
-
+  const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
   };
@@ -15,15 +15,15 @@ const HomePageOfTP3 = ({ onUploadComplete }) => {
 
     const url =
     type === "abr"
-        ? "http://127.0.0.1:5000/upload"
+        ? `${BACKEND_URL}/upload`
         : type === "avl"
-        ? "http://127.0.0.1:5000/avl/upload"
+        ? `${BACKEND_URL}/avl/upload`
         : type === "tasmin"
-        ? "http://127.0.0.1:5000/tasmin/upload"
+        ? `${BACKEND_URL}/tasmin/upload`
         : type === "tasmax"
-        ? "http://127.0.0.1:5000/tasmax/upload"
+        ? `${BACKEND_URL}/tasmax/upload`
         : type === "bitonique"
-        ? "http://127.0.0.1:5000/bitonique/upload"
+        ? `${BACKEND_URL}/bitonique/upload`
         : null;
 
     if (!url) return alert("Unknown type");
