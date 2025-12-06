@@ -2,9 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-# CORS(app, resources={r"/*": {"origins": "https://tp-algo-1-0g5g.onrender.com/"}})
 CORS(app)
-# @app.route("/")
 
 # ------------------------------------------    TP1     -------------------------------------
 
@@ -30,7 +28,6 @@ def upload_file_non_oriente():
     file = request.files["file"]
     content = file.read().decode("utf-8")
 
-    # 1️⃣ Remove brackets and commas
     cleaned = content.replace("[", " ").replace("]", " ").replace(",", " ")
 
     import re
@@ -187,7 +184,6 @@ def to_dict_abr(node):
         "children": [c for c in [to_dict_abr(node.left), to_dict_abr(node.right)] if c]
     }
 
-# --- ABR info functions ---
 def tree_height_ABR(node):
     if node is None:
         return 0
@@ -211,7 +207,6 @@ def density_ABR(node):
     n = node_count_ABR(node)
     return n / h if h > 0 else 0
 
-# ---  Search function ---
 def search_abr(node, value):
     if node is None:
         return False
@@ -250,27 +245,22 @@ def delete_abr(node, value):
 
     return node
 
-# --- Routes ---
 @app.route('/upload', methods=['POST'])
 def upload_file():
     global root_abr
-    file = request.files['file'] # Receives uploaded file from frontend.
-    content = file.read().decode('utf-8') # Reads and decodes it as text.
+    file = request.files['file']
+    content = file.read().decode('utf-8')
 
-    #  Step 1: Remove all brackets and commas
     cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
 
-    #  Step 2: Extract only numbers using regex
     import re
     all_numbers = re.findall(r'\d+', cleaned)
     all_numbers = [int(n) for n in all_numbers]
 
-    #  Step 3: Skip every 3rd element (assuming pattern [[a,b][c]])
     filtered = []
     for i in range(len(all_numbers)):
         filtered.append(all_numbers[i])
 
-    #  Step 4: Build ABR with filtered values
     root_abr = None
     for v in filtered:
         root_abr = insert_abr(root_abr, v)
@@ -307,17 +297,14 @@ def get_info_abr():
 def show_abr():
     return jsonify(to_dict_abr(root_abr))
 
-# ---  Delete route ---
 @app.route('/abr/delete', methods=['POST'])
 def delete_value_abr():
     global root_abr
     value = request.json["value"]
     
-    # Check if value exists in the tree
     if not search_abr(root_abr, value):
         return jsonify({"message": f"Value {value} does not exist in the tree", "success": False})
     
-    # Delete the value
     root_abr = delete_abr(root_abr, value)
     return jsonify({
         "message": f"Value {value} deleted successfully",
@@ -352,7 +339,6 @@ class NodeAVL:
 root_avl = None
 
 
-# --- Helper functions ---
 def get_height(node):
     return 0 if node is None else node.height
 
@@ -397,12 +383,11 @@ def insert_avl(node, value):
     elif value > node.value:
         node.right = insert_avl(node.right, value)
     else:
-        return node  # duplicates ignored
+        return node
 
     node.height = 1 + max(get_height(node.left), get_height(node.right))
     balance = get_balance(node)
 
-    # Balancing
     if balance > 1 and value < node.left.value:
         return rotate_right(node)
     if balance < -1 and value > node.right.value:
@@ -421,7 +406,6 @@ def insert_avl(node, value):
 def delete_avl(node, value):
     global root_avl
 
-    # Standard BST deletion
     if node is None:
         return node
 
@@ -430,7 +414,6 @@ def delete_avl(node, value):
     elif value > node.value:
         node.right = delete_avl(node.right, value)
     else:
-        # Node with only one child or no child
         if node.left is None:
             temp = node.right
             node = None
@@ -440,36 +423,27 @@ def delete_avl(node, value):
             node = None
             return temp
 
-        # Node with two children: get the inorder successor
         temp = get_min_value_node(node.right)
         node.value = temp.value
         node.right = delete_avl(node.right, temp.value)
 
-    # If the tree had only one node then return
     if node is None:
         return node
     
-    # Update height
     node.height = 1 + max(get_height(node.left), get_height(node.right))
     
-    # Get balance factor
     balance = get_balance(node)
     
-    # Balance the tree
-    # Left Left Case
     if balance > 1 and get_balance(node.left) >= 0:
         return rotate_right(node)
     
-    # Left Right Case
     if balance > 1 and get_balance(node.left) < 0:
         node.left = rotate_left(node.left)
         return rotate_right(node)
     
-    # Right Right Case
     if balance < -1 and get_balance(node.right) <= 0:
         return rotate_left(node)
     
-    # Right Left Case
     if balance < -1 and get_balance(node.right) > 0:
         node.right = rotate_right(node.right)
         return rotate_left(node)
@@ -490,7 +464,6 @@ def search_avl(node, value):
         return search_avl(node.right, value)
 
 
-# --- Convert AVL to dict ---
 def to_dict_avl(node):
     if node is None:
         return None
@@ -575,11 +548,9 @@ def delete_value_avl():
     if root_avl is None:
         return jsonify({"message": "No AVL tree to delete from", "success": False}), 400
 
-    # Check if value exists
     if not search_avl(root_avl, value):
         return jsonify({"message": f"Value {value} does not exist in the tree", "success": False}), 404
 
-    # Delete the value
     root_avl = delete_avl(root_avl, value)
 
     return jsonify({
@@ -647,7 +618,7 @@ class MaxHeap:
         try:
             index = self.heap.index(value)
         except ValueError:
-            return False  # Value not found
+            return False
         
         last_element = self.heap.pop()
         if index < len(self.heap):
@@ -696,7 +667,6 @@ class MaxHeap:
         n = self.node_count()
         return n / h if h > 0 else 0
 
-# Create a clear global instance of MaxHeap
 max_heap = MaxHeap()
 
 # --- Routes ---
@@ -717,7 +687,6 @@ def delete_tasmax():
             "tree": max_heap._to_tree_dict()
         }), 200
     else:
-        # return 200 but indicate success False so frontend can handle gracefully
         return jsonify({
             "success": False,
             "message": f"Value {value} not found in the heap!",
@@ -742,7 +711,6 @@ def reset_tasmax():
 
 @app.route('/tasmax/upload', methods=['POST'])
 def upload_file_tasmax():
-    # Reset the heap before inserting new values
     max_heap.reset()
     
     file = request.files['file']
@@ -750,7 +718,6 @@ def upload_file_tasmax():
     cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
     all_numbers = [int(n) for n in re.findall(r'\d+', cleaned)]
 
-    # NOTE: keep same filtering logic if you need it; here I keep your filter
     filtered = [n for i, n in enumerate(all_numbers) if (i + 1) % 3 != 0]
 
     for v in filtered:
@@ -903,7 +870,6 @@ def reset_tasmin():
 
 @app.route('/tasmin/upload', methods=['POST'])
 def upload_file_tasmin():
-    # Reset the heap before inserting new values
     heap.reset()
     
     file = request.files['file']
@@ -913,9 +879,6 @@ def upload_file_tasmin():
     cleaned = content.replace('[', ' ').replace(']', ' ').replace(',', ' ')
     all_numbers = [int(n) for n in re.findall(r'\d+', cleaned)]
 
-    # filtered = [n for i, n in enumerate(all_numbers) if (i + 1) % 3 != 0]
-
-    # Insert each value into the heap
     for v in all_numbers:
         heap.insert(v)
 
@@ -1008,8 +971,6 @@ def get_tree_with_highlight_abr(value):
 
 # -------------------- Tri AVL --------------------
 
-# Add these functions to your AVL code
-
 def inorder_traversal_sequence(node, sequence=None):
     if sequence is None:
         sequence = []
@@ -1033,7 +994,6 @@ def to_dict_avl_with_highlight(node, highlight_value=None):
                                     to_dict_avl_with_highlight(node.right, highlight_value)] if child]
     }
 
-# Add these new routes
 @app.route('/avl/traversal/sequence', methods=['GET'])
 def get_traversal_sequence():
     global root_avl
@@ -1075,10 +1035,8 @@ def show_tri_avl():
     return tri_avl()
 
 # ---------------------------- Tri TASMAX ---------------------------
-# ---------------------------- Tri TASMAX ---------------------------
 import time
 
-# Fonction pour obtenir la structure du tas avec mise en évidence
 def max_heap_to_dict_with_highlight(heap, highlight_index=None):
     if not heap:
         return None
@@ -1115,31 +1073,25 @@ def max_heap_to_dict_with_highlight(heap, highlight_index=None):
     
     return build_node(0)
 
-# Fonction pour obtenir la séquence d'extraction
 def get_max_extraction_sequence(heap):
     if not heap:
         return []
     
-    # Créer une copie du tas pour ne pas modifier l'original
     heap_copy = heap.copy()
     sequence = []
     
     while heap_copy:
-        # Extraire le maximum (racine)
         max_val = heap_copy[0]
         sequence.append(max_val)
         
-        # Remplacer la racine par le dernier élément
         heap_copy[0] = heap_copy[-1]
         heap_copy.pop()
         
-        # Reconstituer le tas (max heapify)
         if heap_copy:
             max_heapify(heap_copy, 0)
     
     return sequence
 
-# Fonction max_heapify pour reconstituer le tas maximum
 def max_heapify(heap, i):
     n = len(heap)
     largest = i
@@ -1164,7 +1116,6 @@ def tri_tasmax():
         Time = round((time.time() - start_time) * 1000, 4)
         return jsonify({"sorted_values": [], "execution_time_ms": Time})
 
-    # Sort values from largest to smallest (descending order)
     sorted_values = sorted(heap.heap, reverse=True)
 
     Time = round((time.time() - start_time) * 1000, 4)
@@ -1177,7 +1128,6 @@ def tri_tasmax():
 def show_tri_tasmax():
     return tri_tasmax()
 
-# Nouvelles routes pour l'animation
 @app.route('/tasmax/extraction/sequence', methods=['GET'])
 def get_max_extraction_sequence_route():
     global heap
@@ -1192,23 +1142,18 @@ def get_max_heap_at_step(step):
     if not heap.heap:
         return jsonify({"message": "No heap yet"}), 200
     
-    # Créer une copie du tas pour simuler l'état à l'étape donnée
     heap_copy = heap.heap.copy()
     
-    # Simuler l'extraction jusqu'à l'étape donnée
     for i in range(step):
         if not heap_copy:
             break
         
-        # Extraire le maximum (racine)
         heap_copy[0] = heap_copy[-1]
         heap_copy.pop()
         
-        # Reconstituer le tas maximum
         if heap_copy:
             max_heapify(heap_copy, 0)
     
-    # Déterminer quel élément sera extrait à l'étape suivante
     highlight_index = 0 if heap_copy else None
     
     return jsonify(max_heap_to_dict_with_highlight(heap_copy, highlight_index)), 200
@@ -1321,7 +1266,6 @@ def compare_and_swap(arr, low, cnt, direction):
             if i + k < len(arr):
                 if (direction == 1 and arr[i] > arr[i + k]) or \
                     (direction == 0 and arr[i] < arr[i + k]):
-                    # Convert any Infinity values to strings for JSON compatibility
                     array_copy = ["Infinity" if x == float('inf') else x for x in arr]
                     steps.append({
                         "array": array_copy,
@@ -1336,7 +1280,6 @@ def compare_and_swap(arr, low, cnt, direction):
                         "comparing": []
                     })
                 else:
-                    # Convert any Infinity values to strings for JSON compatibility
                     array_copy = ["Infinity" if x == float('inf') else x for x in arr]
                     steps.append({
                         "array": array_copy,
@@ -1360,17 +1303,13 @@ def bitonic_sort_recursive(arr, low, cnt, direction):
 
 def bitonic_sort(arr):
     n = len(arr)
-    # Find the next power of 2 greater than or equal to n
     power_of_2 = 1
     while power_of_2 < n:
         power_of_2 *= 2
     
-    # Store original length to remove padding later
     original_length = n
     
-    # If n is not a power of 2, pad with +infinity
     if n != power_of_2:
-        # Add initial state step before padding
         array_copy = ["Infinity" if x == float('inf') else x for x in arr]
         steps.append({
             "array": array_copy,
@@ -1378,10 +1317,8 @@ def bitonic_sort(arr):
             "comparing": []
         })
         
-        # Pad with +infinity
         arr.extend([float('inf')] * (power_of_2 - n))
         
-        # Add a step to show the padding
         array_copy = ["Infinity" if x == float('inf') else x for x in arr]
         steps.append({
             "array": array_copy,
@@ -1389,12 +1326,9 @@ def bitonic_sort(arr):
             "comparing": list(range(original_length, power_of_2))
         })
     
-    # Perform bitonic sort on the padded array
     bitonic_sort_recursive(arr, 0, power_of_2, 1)
     
-    # Remove the padding (if any)
     if len(arr) > original_length:
-        # Add a step before removing padding
         array_copy = ["Infinity" if x == float('inf') else x for x in arr]
         steps.append({
             "array": array_copy,
@@ -1402,10 +1336,8 @@ def bitonic_sort(arr):
             "comparing": list(range(original_length, len(arr)))
         })
         
-        # Remove the padding
         arr = arr[:original_length]
         
-        # Add final state step
         array_copy = ["Infinity" if x == float('inf') else x for x in arr]
         steps.append({
             "array": array_copy,
@@ -1421,8 +1353,7 @@ import re
 def bitonique_upload_file():
     """Receive file and store numbers (no sorting yet)."""
     global uploaded_numbers
-    uploaded_numbers = []  # reset old data
-
+    uploaded_numbers = []
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
 
@@ -1437,7 +1368,7 @@ def bitonique_upload_file():
         if not numbers:
             return jsonify({"error": "No numbers found in file"}), 400
 
-        uploaded_numbers = numbers  # save numbers globally
+        uploaded_numbers = numbers
         return jsonify({"message": "File uploaded successfully!", "numbers": numbers}), 200
 
     except Exception as e:
@@ -1454,7 +1385,6 @@ def sort_uploaded_file():
         return jsonify({"error": "No file uploaded yet!"}), 400
 
     arr = uploaded_numbers.copy()
-    # Use the new bitonic_sort function that handles non-power-of-2 arrays with +infinity padding
     sorted_arr = bitonic_sort(arr)
     
     return jsonify({"steps": steps}), 200
@@ -1464,11 +1394,8 @@ def sort_uploaded_file():
 # ---------------------------- TP4 -----------------------------
 # ------------ Prim ---------------
 
-
-# Add this to your existing Flask app
 import heapq
 
-# Store Prim's algorithm steps globally
 prim_steps = []
 
 @app.route("/prim/upload", methods=["POST"])
@@ -1478,7 +1405,6 @@ def upload_file_prim():
     file = request.files["file"]
     content = file.read().decode("utf-8")
     
-    # Parse the file content to build the graph
     cleaned = content.replace("[", " ").replace("]", " ").replace(",", " ")
     import re
     all_values = re.findall(r"\b[a-zA-Z0-9]+\b", cleaned)
@@ -1498,7 +1424,6 @@ def upload_file_prim():
         # For undirected graph, add edge in both directions
         add_edge_pondere(graph_pondere, b, a, poids)
     
-    # Reset steps
     prim_steps = []
     
     return jsonify({
@@ -1581,10 +1506,8 @@ def get_prim_steps():
 
 # ------------------- Kruskal --------------------
 
-# Add this to your existing Flask app
 import heapq
 
-# Store Kruskal's algorithm steps globally
 kruskal_steps = []
 
 @app.route("/kruskal/upload", methods=["POST"])
@@ -1710,12 +1633,10 @@ def get_kruskal_steps():
 # ---------------- Floyd -------------
 
 
-# ------------ Floyd-Warshall Algorithm ---------------
 
 floyd_steps = []
 floyd_graph = {}
 
-# Helper function to convert Infinity to None for JSON serialization
 def prepare_matrix_for_json(matrix):
     if not matrix:
         return None
@@ -1729,11 +1650,8 @@ def upload_file_floyd():
         file = request.files["file"]
         content = file.read().decode("utf-8")
         
-        # 1. Parse the file strictly respecting the format [[a,b][w]]
-        # We replace brackets with spaces to make it a long string of values
         cleaned = content.replace("[", " ").replace("]", " ").replace(",", " ")
         
-        # Split by whitespace. This preserves negative signs (e.g. "-2")
         all_values = cleaned.split()
         
         edges = []
@@ -1742,29 +1660,21 @@ def upload_file_floyd():
             a = all_values[i]
             b = all_values[i + 1]
             try:
-                # Ensure weight is a float/int, handling negative numbers
                 poids = float(all_values[i + 2])
                 edges.append((a, b, poids))
             except ValueError:
-                pass # Skip if parsing fails
+                pass
             i += 3
         
-        # 2. Initialize graph
         floyd_graph = {}
         
-        # Ensure all nodes exist in the dictionary keys first
         for a, b, poids in edges:
             if a not in floyd_graph: floyd_graph[a] = []
             if b not in floyd_graph: floyd_graph[b] = []
 
-        # 3. Add Directed Edges
-        # We do NOT force back-edges here. If the user wants A<->B, 
-        # they must provide [[a,b][w1]] and [[b,a][w2]]
         for a, b, poids in edges:
-            # Check for duplicates to prevent array bloat
             existing = next((x for x in floyd_graph[a] if x[0] == b), None)
             if existing:
-                # Update weight if edge exists (or keep first, depending on preference)
                 floyd_graph[a].remove(existing)
             floyd_graph[a].append((b, poids))
         
@@ -1793,33 +1703,28 @@ def execute_floyd():
             return jsonify({"error": "No graph available."})
 
         floyd_steps = []
-        nodes = sorted(list(floyd_graph.keys())) # Sort nodes for consistent matrix order
+        nodes = sorted(list(floyd_graph.keys()))
         n = len(nodes)
         
         node_index = {node: i for i, node in enumerate(nodes)}
         
-        # Initialize distance matrix
         distance = [[float('inf')] * n for _ in range(n)]
         for i in range(n):
             distance[i][i] = 0
         
-        # Initialize path matrix (Predecessor matrix)
         path = [[None] * n for _ in range(n)]
         for i in range(n):
             for j in range(n):
                 if i != j:
-                    path[i][j] = i # Initially, predecessor is the start node
+                    path[i][j] = i
         
-        # Fill based on Graph connections
         for node in floyd_graph:
             for neighbor, weight in floyd_graph[node]:
                 i = node_index[node]
                 j = node_index[neighbor]
-                # If multiple edges defined, take the smallest weight
                 if weight < distance[i][j]:
                     distance[i][j] = weight
         
-        # Step 0: Initial State
         floyd_steps.append({
             "type": "initialization",
             "distance_matrix": prepare_matrix_for_json(distance),
@@ -1827,9 +1732,7 @@ def execute_floyd():
             "message": "Initial Matrix (k=0)"
         })
         
-        # Floyd-Warshall Algorithm
         for k in range(n):
-            # We want to show the matrix *after* processing node k
             
             for i in range(n):
                 for j in range(n):
@@ -1837,10 +1740,8 @@ def execute_floyd():
                         new_dist = distance[i][k] + distance[k][j]
                         if new_dist < distance[i][j]:
                             distance[i][j] = new_dist
-                            path[i][j] = path[k][j] # Standard FW path reconstruction
+                            path[i][j] = path[k][j]
             
-            # --- SNAPSHOT HERE ---
-            # Capture state only once per iteration of K
             floyd_steps.append({
                 "type": "iteration_end",
                 "k": k,
@@ -1863,7 +1764,6 @@ def execute_floyd():
 
 # ---------------- Welsh-Powell ----------------
 
-# Store data in memory
 welsh_powell_graph = {}
 welsh_powell_steps = []
 
@@ -1888,12 +1788,8 @@ def upload_file_welsh_powell():
             
         content = file.read().decode("utf-8")
         print(f"--- FILE CONTENT RECEIVED ---\n{content}\n---------------------------")
-        
-        # Parse the file - this is the key fix
-        # We need to properly parse the format [[A,B][2]],[[A,E][2]] etc.
         import re
         
-        # Use regex to extract node pairs
         pattern = r'\[\[([A-Z]),([A-Z])\]\[[0-9]+\]\]'
         matches = re.findall(pattern, content)
         
@@ -1904,17 +1800,13 @@ def upload_file_welsh_powell():
         
         print(f"PARSED EDGES: {edges}")
         
-        # Initialize graph
         welsh_powell_graph = {}
         
-        # Ensure all nodes exist in the dictionary keys first
         for a, b in edges:
             if a not in welsh_powell_graph: welsh_powell_graph[a] = []
             if b not in welsh_powell_graph: welsh_powell_graph[b] = []
 
-        # Add Undirected Edges
         for a, b in edges:
-            # Check for duplicates
             if b not in welsh_powell_graph[a]:
                 welsh_powell_graph[a].append(b)
             if a not in welsh_powell_graph[b]:
@@ -1945,28 +1837,21 @@ def execute_welsh_powell():
     if not welsh_powell_graph:
         return jsonify({"error": "No graph loaded"}), 400
     
-    # Clear previous steps
     welsh_powell_steps = []
     
-    # Get nodes and their degrees
     nodes = list(welsh_powell_graph.keys())
     degrees = {node: len(welsh_powell_graph[node]) for node in nodes}
     
-    # Sort nodes by degree (descending)
     sorted_nodes = sorted(nodes, key=lambda x: degrees[x], reverse=True)
     
-    # Initialize coloring
     coloring = {}
     colors_used = 0
     uncolored_nodes = sorted_nodes.copy()
     
-    # Welsh-Powell algorithm
     while uncolored_nodes:
-        # Start with the highest degree uncolored node
         current_color = colors_used
         nodes_to_color = [uncolored_nodes[0]]
         
-        # Record initial step for this color
         welsh_powell_steps.append({
             "sorted_nodes": sorted_nodes,
             "degrees": degrees,
@@ -1975,8 +1860,6 @@ def execute_welsh_powell():
             "message": f"Starting color {current_color} with node {uncolored_nodes[0]}"
         })
         
-        # Find all nodes that can be colored with the current color
-        # (not adjacent to any node already colored with this color)
         for node in uncolored_nodes[1:]:
             can_color = True
             for colored_node in nodes_to_color:
@@ -1987,12 +1870,10 @@ def execute_welsh_powell():
             if can_color:
                 nodes_to_color.append(node)
         
-        # Color all the nodes that can take this color
         for node in nodes_to_color:
             coloring[node] = current_color
             uncolored_nodes.remove(node)
         
-        # Record step after coloring all nodes with this color
         welsh_powell_steps.append({
             "sorted_nodes": sorted_nodes,
             "degrees": degrees,
