@@ -8,28 +8,25 @@ const WelshPowell = () => {
   const [error, setError] = useState(null);
   const [serverStatus, setServerStatus] = useState("checking");
   const canvasRef = useRef(null);
+  const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
 
-  // --- MODIFIED: Load graph from localStorage or fetch from server ---
   useEffect(() => {
     const loadGraph = async () => {
       try {
-        // 1. First, try to get the graph from localStorage
         const savedGraph = localStorage.getItem('uploadedGraph');
         if (savedGraph) {
           const graphData = JSON.parse(savedGraph);
           console.log("Loading graph from localStorage:", graphData);
           setGraph(graphData);
-          // Clear localStorage so it doesn't get used again on refresh
           localStorage.removeItem('uploadedGraph');
-          setServerStatus("online"); // Assume server is online if we have a graph
+          setServerStatus("online");
           return;
         }
 
-        // 2. If no graph in localStorage, check server status and fetch
-        const response = await fetch("http://127.0.0.1:5000/");
+        const response = await fetch(`${BACKEND_URL}/`);
         if (response.ok) {
           setServerStatus("online");
-          fetchGraphData(); // Fetch the default graph from server
+          fetchGraphData(); 
         } else {
           setServerStatus("offline");
           setError("Server is not responding correctly");
@@ -41,13 +38,13 @@ const WelshPowell = () => {
     };
     
     loadGraph();
-  }, []); // This runs only once when the component mounts
+  }, []); 
 
   const fetchGraphData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("http://127.0.0.1:5000/welsh_powell/get");
+      const response = await fetch(`${BACKEND_URL}/welsh_powell/get`);
       
       if (!response.ok) {
         throw new Error(`Server responded with status: ${response.status}`);
@@ -72,7 +69,7 @@ const WelshPowell = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("http://127.0.0.1:5000/welsh_powell/execute");
+      const response = await fetch(`${BACKEND_URL}/welsh_powell/execute`);
       
       if (!response.ok) {
         throw new Error(`Server responded with status: ${response.status}`);

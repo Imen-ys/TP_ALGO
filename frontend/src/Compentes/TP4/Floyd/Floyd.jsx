@@ -8,7 +8,6 @@ const Floyd = () => {
   const [finalPathMatrix, setFinalPathMatrix] = useState(null); 
   const canvasRef = useRef(null);
 
-  // --- 1. DATA FETCHING & EXECUTION ---
 
 
   const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
@@ -36,20 +35,17 @@ const Floyd = () => {
      
       if (data.error) throw new Error(data.error);
 
-      // Helper to handle Infinity/None from JSON
       const deserializeMatrix = (matrix) => {
         if (!matrix) return null;
         return matrix.map(row => row.map(cell => (cell === null ? Infinity : cell)));
       };
 
-      // Process steps including the final result
       const processedSteps = data.steps.map(step => ({
         ...step,
         distance_matrix: deserializeMatrix(step.distance_matrix),
         path_matrix: step.path_matrix,
       }));
 
-      // Append the Final Result as a specific step for display
       const finalResult = {
         type: 'final',
         message: "Final Result (All Shortest Paths)",
@@ -58,7 +54,6 @@ const Floyd = () => {
       };
 
       setSteps([...processedSteps, finalResult]);
-      // Store the final path matrix but don't trigger visualization change
       setFinalPathMatrix(data.final_path_matrix);
 
     } catch (error) {
@@ -68,7 +63,6 @@ const Floyd = () => {
     }
   };
 
-  // --- 2. PATH RECONSTRUCTION LOGIC ---
 
   const reconstructPath = (startIndex, endIndex, pathMatrix, nodes) => {
     if (pathMatrix[startIndex][endIndex] === null) return "No Path";
@@ -109,7 +103,6 @@ const Floyd = () => {
     return paths;
   };
 
-  // --- 3. CANVAS DRAWING HELPERS ---
 
   function drawArrowHead(ctx, x, y, angle, nodeRadius = 22) {
       const headlen = 10;
@@ -143,9 +136,7 @@ const Floyd = () => {
       });
   }
 
-  // --- 4. GRAPH DRAWING FUNCTIONS ---
 
-  // Draws the initial graph (to match the large graph in your photo)
   const drawGraph = () => {
     if (!canvasRef.current || !graph) return;
 
@@ -162,7 +153,6 @@ const Floyd = () => {
     const centerY = height / 2;
     const radius = Math.min(width, height) * 0.35;
 
-    // 1. Calculate Positions
     nodes.forEach((node, i) => {
       const angle = (2 * Math.PI * i) / nodes.length - Math.PI / 2;
       nodePositions[node] = {
@@ -171,7 +161,6 @@ const Floyd = () => {
       };
     });
 
-    // 2. Draw Edges (Curved logic for clarity)
     nodes.forEach(source => {
       if(!graph[source]) return;
      
@@ -190,7 +179,6 @@ const Floyd = () => {
         let labelX, labelY;
 
         if (hasReverse && source !== target) {
-            // --- CURVED EDGE ---
             const dx = end.x - start.x;
             const dy = end.y - start.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
@@ -216,7 +204,6 @@ const Floyd = () => {
             drawArrowHead(ctx, end.x, end.y, arrowAngle);
 
         } else {
-            // --- STRAIGHT EDGE ---
             ctx.moveTo(start.x, start.y);
             ctx.lineTo(end.x, end.y);
             ctx.stroke();
@@ -228,7 +215,6 @@ const Floyd = () => {
             drawArrowHead(ctx, end.x, end.y, arrowAngle);
         }
 
-        // Draw Weight
         ctx.beginPath();
         ctx.fillStyle = 'white';
         ctx.arc(labelX, labelY, 12, 0, 2 * Math.PI);
@@ -245,11 +231,9 @@ const Floyd = () => {
       });
     });
 
-    // 3. Draw Nodes
     drawNodes(ctx, nodes, nodePositions);
   };
 
-  // Draws ONLY the edges that correspond to the final shortest paths (single graph view)
   const drawShortestPaths = (pathMatrix) => {
     if (!canvasRef.current || !graph || !pathMatrix) return;
 
@@ -266,7 +250,6 @@ const Floyd = () => {
     const centerY = height / 2;
     const radius = Math.min(width, height) * 0.35;
 
-    // 1. Calculate Positions
     nodes.forEach((node, i) => {
       const angle = (2 * Math.PI * i) / nodes.length - Math.PI / 2;
       nodePositions[node] = {
@@ -275,12 +258,10 @@ const Floyd = () => {
       };
     });
 
-    // 2. Draw Edges based on Path Matrix (Predecessors)
     ctx.strokeStyle = '#4A00B7';
     ctx.lineWidth = 3;
     ctx.fillStyle = '#4A00B7';
 
-    // Using a Set to track drawn edges (predecessor -> destination) to avoid drawing the same edge multiple times
     const drawnEdges = new Set(); 
 
     for (let i = 0; i < nodes.length; i++) {
@@ -291,7 +272,6 @@ const Floyd = () => {
                 const predecessorNode = nodes[predecessorIndex];
                 const destinationNode = nodes[j];
                
-                // Edge identifier: "predecessorNode->destinationNode"
                 const edgeKey = `${predecessorNode}->${destinationNode}`;
 
                 if (!drawnEdges.has(edgeKey)) {
@@ -300,13 +280,11 @@ const Floyd = () => {
                     const source = nodePositions[predecessorNode];
                     const target = nodePositions[destinationNode];
 
-                    // Draw the edge from predecessor to destination
                     ctx.beginPath();
                     ctx.moveTo(source.x, source.y);
                     ctx.lineTo(target.x, target.y);
                     ctx.stroke();
 
-                    // Draw Arrow Head
                     const arrowAngle = Math.atan2(target.y - source.y, target.x - source.x);
                     drawArrowHead(ctx, target.x, target.y, arrowAngle);
                 }
@@ -314,18 +292,14 @@ const Floyd = () => {
         }
     }
 
-    // 3. Draw Nodes
     drawNodes(ctx, nodes, nodePositions);
   };
 
-  // --- 5. VISUAL EFFECT HOOK ---
 
   useEffect(() => {
-    // Always display the initial input graph
     drawGraph();
   }, [graph]);
 
-  // --- 6. RENDER HELPER FOR MATRICES ---
 
   const renderMatrix = (matrix, title, isPathMatrix = false) => {
     if (!matrix || matrix.length === 0) return null;
@@ -354,7 +328,7 @@ const Floyd = () => {
                         displayValue = '-';
                         cellClass += ' text-gray-400';
                       } else {
-                        displayValue = nodes[cell]; // Display node label
+                        displayValue = nodes[cell];
                         cellClass += ' font-semibold text-orange-600';
                       }
                     } else {
@@ -382,7 +356,6 @@ const Floyd = () => {
     );
   };
 
-  // --- 7. MAIN RENDER ---
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 font-sans">
@@ -391,7 +364,6 @@ const Floyd = () => {
           Floyd-Warshall Algorithm
         </h1>
        
-        {/* Controls */}
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-8 flex gap-4 items-center justify-center">
             <button 
                 onClick={fetchGraphData}
@@ -416,7 +388,6 @@ const Floyd = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left: Canvas */}
             <div className="lg:col-span-5 flex flex-col">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sticky top-6">
                     <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
@@ -428,7 +399,6 @@ const Floyd = () => {
                 </div>
             </div>
 
-            {/* Right: Steps & Results */}
             <div className="lg:col-span-7 space-y-6">
                 {steps.length > 0 ? (
                     <>

@@ -10,14 +10,14 @@ const Prim = () => {
   const intervalRef = useRef(null);
 
   useEffect(() => {
-    // Fetch the graph data when component mounts
     fetchGraphData();
   }, []);
+  const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
 
   const fetchGraphData = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://127.0.0.1:5000/graphePondere/get");
+      const response = await fetch(`${BACKEND_URL}/graphePondere/get`);
       const data = await response.json();
       setGraph(data.graph);
     } catch (error) {
@@ -32,7 +32,7 @@ const Prim = () => {
     
     try {
       setLoading(true);
-      const response = await fetch("http://127.0.0.1:5000/prim/execute");
+      const response = await fetch(`${BACKEND_URL}/prim/execute`);
       const data = await response.json();
       setSteps(data.steps);
       setCurrentStep(0);
@@ -52,23 +52,19 @@ const Prim = () => {
     const width = canvas.width;
     const height = canvas.height;
     
-    // Clear canvas
     ctx.clearRect(0, 0, width, height);
     
-    // Extract nodes and edges
     const nodes = Object.keys(graph);
     const edges = [];
     
     for (const node in graph) {
       for (const [neighbor, weight] of graph[node]) {
-        // Add edge only once (avoid duplicates)
         if (!edges.some(e => (e[0] === node && e[1] === neighbor) || (e[0] === neighbor && e[1] === node))) {
           edges.push([node, neighbor, weight]);
         }
       }
     }
     
-    // Calculate node positions (simple circular layout)
     const nodePositions = {};
     const centerX = width / 2;
     const centerY = height / 2;
@@ -82,46 +78,39 @@ const Prim = () => {
       };
     });
     
-    // Get current step information
     const currentStepData = steps[currentStep] || {};
     const visitedNodes = new Set(currentStepData.visited || []);
     const treeEdges = currentStepData.tree_edges || [];
     const currentEdge = currentStepData.edge || null;
     
-    // Draw edges
     edges.forEach(([from, to, weight]) => {
       const fromPos = nodePositions[from];
       const toPos = nodePositions[to];
       
-      // Check if this edge is in the tree
       const isInTree = treeEdges.some(e => 
         (e[0] === from && e[1] === to) || (e[0] === to && e[1] === from)
       );
       
-      // Check if this edge is currently being considered
       const isCurrentEdge = currentEdge && 
         ((currentEdge[0] === from && currentEdge[1] === to) || 
          (currentEdge[0] === to && currentEdge[1] === from));
       
-      // Set edge style based on state
       if (isInTree) {
-        ctx.strokeStyle = '#4CAF50'; // Green for tree edges
+        ctx.strokeStyle = '#4CAF50'; 
         ctx.lineWidth = 4;
       } else if (isCurrentEdge) {
-        ctx.strokeStyle = '#FF9800'; // Orange for currently considered edge
+        ctx.strokeStyle = '#FF9800';
         ctx.lineWidth = 4;
       } else {
-        ctx.strokeStyle = '#d0d0d0'; // Gray for other edges
+        ctx.strokeStyle = '#d0d0d0'; 
         ctx.lineWidth = 2;
       }
       
-      // Draw the edge
       ctx.beginPath();
       ctx.moveTo(fromPos.x, fromPos.y);
       ctx.lineTo(toPos.x, toPos.y);
       ctx.stroke();
       
-      // Draw weight
       const midX = (fromPos.x + toPos.x) / 2;
       const midY = (fromPos.y + toPos.y) / 2;
       ctx.fillStyle = '#333';
@@ -131,12 +120,10 @@ const Prim = () => {
       ctx.fillText(weight.toString(), midX, midY);
     });
     
-    // Draw nodes
     nodes.forEach(node => {
       const pos = nodePositions[node];
       const isVisited = visitedNodes.has(node);
       
-      // Draw node circle
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, 20, 0, 2 * Math.PI);
       ctx.fillStyle = isVisited ? '#4CAF50' : '#f0f0f0';
@@ -145,7 +132,6 @@ const Prim = () => {
       ctx.lineWidth = 2;
       ctx.stroke();
       
-      // Draw node label
       ctx.fillStyle = isVisited ? 'white' : '#333';
       ctx.font = 'bold 16px Arial';
       ctx.textAlign = 'center';
@@ -168,7 +154,7 @@ const Prim = () => {
         }
         return prev + 1;
       });
-    }, 1500); // 1.5 seconds per step
+    }, 1500); 
   };
 
   const pauseAnimation = () => {
@@ -213,13 +199,11 @@ const Prim = () => {
     };
   }, [isPlaying, currentStep, steps.length]);
 
-  // Format the tree edges for display
   const formatTreeEdges = (edges) => {
     if (!edges || edges.length === 0) return "None";
     return edges.map(e => `${e[0]}-${e[1]}(${e[2]})`).join(", ");
   };
 
-  // Calculate cumulative weight at each step
   const calculateCumulativeWeight = (stepIndex) => {
     if (stepIndex < 0 || !steps[stepIndex]) return 0;
     const step = steps[stepIndex];
