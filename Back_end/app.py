@@ -2,8 +2,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-# CORS(app, resources={r"/*": {"origins": "https://tp-algo-three.vercel.app"}})
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "https://tp-algo-1-0g5g.onrender.com/"}})
+# CORS(app)
 # @app.route("/")
 
 # ------------------------------------------    TP1     -------------------------------------
