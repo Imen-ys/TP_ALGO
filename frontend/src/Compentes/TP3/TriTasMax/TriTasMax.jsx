@@ -11,11 +11,11 @@ const TriTASMAX = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const animationRef = useRef(null);
+    const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
 
-    // Fetch the heap data
     const fetchHeap = async () => {
         try {
-            const res = await fetch("http://127.0.0.1:5000/tasmax/show");
+            const res = await fetch(`${BACKEND_URL}/tasmax/show`);
             const data = await res.json();
             setHeapData(data);
         } catch (err) {
@@ -23,10 +23,9 @@ const TriTASMAX = () => {
         }
     };
 
-    // Fetch the extraction sequence
     const fetchExtractionSequence = async () => {
         try {
-            const res = await fetch("http://127.0.0.1:5000/tasmax/extraction/sequence");
+            const res = await fetch(`${BACKEND_URL}/tasmax/extraction/sequence`);
             const data = await res.json();
             setExtractionSequence(data.sequence);
         } catch (err) {
@@ -34,10 +33,9 @@ const TriTASMAX = () => {
         }
     };
 
-    // Fetch heap at a specific step
     const fetchHeapAtStep = async (step) => {
         try {
-            const res = await fetch(`http://127.0.0.1:5000/tasmax/heap/step/${step}`);
+            const res = await fetch(`${BACKEND_URL}/tasmax/heap/step/${step}`);
             const data = await res.json();
             setHeapData(data);
         } catch (err) {
@@ -45,7 +43,6 @@ const TriTASMAX = () => {
         }
     };
 
-    // Start the animation
     const startAnimation = () => {
         if (extractionSequence.length === 0) return;
         
@@ -53,47 +50,38 @@ const TriTASMAX = () => {
         setCurrentStep(0);
         setSortedValues([]);
         
-        // Reset heap to initial state
         fetchHeap();
         
-        // Start the step-by-step animation
         animationRef.current = setTimeout(() => {
             animateStep(0);
         }, 1000);
     };
 
-    // Animate each step
     const animateStep = (step) => {
         if (step >= extractionSequence.length) {
             setIsAnimating(false);
             return;
         }
 
-        // Add the extracted value to sorted values
         setSortedValues(prev => [...prev, extractionSequence[step]]);
         
-        // Show the heap after extraction
         fetchHeapAtStep(step + 1);
         
-        // Move to the next step
         setCurrentStep(step + 1);
         
-        // Schedule the next step
         animationRef.current = setTimeout(() => {
             animateStep(step + 1);
-        }, 1500); // Adjust timing as needed
+        }, 1500);
     };
 
-    // Stop the animation
     const stopAnimation = () => {
         if (animationRef.current) {
             clearTimeout(animationRef.current);
         }
         setIsAnimating(false);
-        fetchHeap(); // Reset heap to initial state
+        fetchHeap();
     };
 
-    // Reset the animation
     const resetAnimation = () => {
         stopAnimation();
         setCurrentStep(0);
@@ -103,7 +91,6 @@ const TriTASMAX = () => {
     useEffect(() => {
         Promise.all([fetchHeap(), fetchExtractionSequence()]).finally(() => setLoading(false));
         
-        // Clean up animation on unmount
         return () => {
             if (animationRef.current) {
                 clearTimeout(animationRef.current);
@@ -111,7 +98,6 @@ const TriTASMAX = () => {
         };
     }, []);
 
-    // Custom node rendering to highlight nodes
     const renderNodeWithCustomization = ({ nodeDatum, toggleNode }) => {
         const isHighlighted = nodeDatum.attributes?.highlight;
         
@@ -119,7 +105,7 @@ const TriTASMAX = () => {
             <g>
                 <circle
                     r={15}
-                    fill={isHighlighted ? "#ef4444" : "#16a34a"} // Red if highlighted, green otherwise
+                    fill={isHighlighted ? "#ef4444" : "#16a34a"} 
                     stroke={isHighlighted ? "#991b1b" : "#14532d"}
                     strokeWidth={2}
                 />
@@ -153,7 +139,6 @@ const TriTASMAX = () => {
                     <p className="text-red-500">{error}</p>
                 ) : (
                     <>
-                        {/* Control buttons */}
                         <div className="flex gap-4 mb-6">
                             <button
                                 onClick={startAnimation}
@@ -177,7 +162,6 @@ const TriTASMAX = () => {
                             </button>
                         </div>
 
-                        {/* Heap visualization */}
                         {heapData ? (
                             <div className="bg-white p-4 rounded-xl shadow w-full h-[500px] flex items-center justify-center mb-8">
                                 <Tree
@@ -200,7 +184,6 @@ const TriTASMAX = () => {
                             <p className="text-gray-500 mb-8">Aucun tas à afficher</p>
                         )}
 
-                        {/* Sorted values display */}
                         <div className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md text-center">
                             <h2 className="text-lg font-semibold text-green-700 mb-2">
                                 Valeurs triées (Extraction du tas) :

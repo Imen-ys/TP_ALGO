@@ -12,10 +12,11 @@ const TriABR = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const animationRef = useRef(null);
+  const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
 
     const fetchTree = async () => {
         try {
-            const res = await fetch("http://127.0.0.1:5000/abr/show");
+            const res = await fetch(`${BACKEND_URL}/abr/show`);
             const data = await res.json();
             setTreeData(data);
         } catch (err) {
@@ -25,7 +26,7 @@ const TriABR = () => {
 
     const fetchTraversalSequence = async () => {
         try {
-            const res = await fetch("http://127.0.0.1:5000/abr/traversal/sequence");
+            const res = await fetch(`${BACKEND_URL}/abr/traversal/sequence`);
             const data = await res.json();
             setTraversalSequence(data.sequence);
         } catch (err) {
@@ -35,7 +36,7 @@ const TriABR = () => {
 
     const fetchTreeWithHighlight = async (value) => {
         try {
-            const res = await fetch(`http://127.0.0.1:5000/abr/tree/highlight/${value}`);
+            const res = await fetch(`${BACKEND_URL}/abr/tree/highlight/${value}`);
             const data = await res.json();
             setTreeData(data);
         } catch (err) {
@@ -87,7 +88,6 @@ const TriABR = () => {
     useEffect(() => {
         Promise.all([fetchTree(), fetchTraversalSequence()]).finally(() => setLoading(false));
         
-        // Clean up animation on unmount
         return () => {
             if (animationRef.current) {
                 clearTimeout(animationRef.current);
@@ -95,7 +95,6 @@ const TriABR = () => {
         };
     }, []);
 
-    // Custom node rendering to highlight nodes
     const renderNodeWithCustomization = ({ nodeDatum, toggleNode }) => {
         const isHighlighted = nodeDatum.attributes?.highlight;
         
@@ -103,7 +102,7 @@ const TriABR = () => {
             <g>
                 <circle
                     r={15}
-                    fill={isHighlighted ? "#ef4444" : "#16a34a"} // Red if highlighted, green otherwise
+                    fill={isHighlighted ? "#ef4444" : "#16a34a"}
                     stroke={isHighlighted ? "#991b1b" : "#14532d"}
                     strokeWidth={2}
                 />
@@ -137,7 +136,6 @@ const TriABR = () => {
                     <p className="text-red-500">{error}</p>
                 ) : (
                     <>
-                        {/* Control buttons */}
                         <div className="flex gap-4 mb-6">
                             <button
                                 onClick={startAnimation}
@@ -161,7 +159,6 @@ const TriABR = () => {
                             </button>
                         </div>
 
-                        {/* Tree visualization */}
                         {treeData ? (
                             <div className="bg-white p-4 rounded-xl shadow w-full h-[500px] flex items-center justify-center mb-8">
                                 <Tree
@@ -184,7 +181,6 @@ const TriABR = () => {
                             <p className="text-gray-500 mb-8">Aucun arbre à afficher</p>
                         )}
 
-                        {/* Sorted values display */}
                         <div className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md text-center">
                             <h2 className="text-lg font-semibold text-green-700 mb-2">
                                 Valeurs triées (Parcours Infixe) :

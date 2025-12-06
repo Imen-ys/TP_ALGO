@@ -11,10 +11,12 @@ const TriTASMIN = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const animationRef = useRef(null);
+      const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
+
 
     const fetchHeap = async () => {
         try {
-            const res = await fetch("http://127.0.0.1:5000/tasmin/show");
+            const res = await fetch(`${BACKEND_URL}/tasmin/show`);
             const data = await res.json();
             setHeapData(data);
         } catch (err) {
@@ -24,7 +26,7 @@ const TriTASMIN = () => {
 
     const fetchExtractionSequence = async () => {
         try {
-            const res = await fetch("http://127.0.0.1:5000/tasmin/extraction/sequence");
+            const res = await fetch(`${BACKEND_URL}/tasmin/extraction/sequence`);
             const data = await res.json();
             setExtractionSequence(data.sequence);
         } catch (err) {
@@ -34,7 +36,7 @@ const TriTASMIN = () => {
 
     const fetchHeapAtStep = async (step) => {
         try {
-            const res = await fetch(`http://127.0.0.1:5000/tasmin/heap/step/${step}`);
+            const res = await fetch(`${BACKEND_URL}/tasmin/heap/step/${step}`);
             const data = await res.json();
             setHeapData(data);
         } catch (err) {
@@ -127,7 +129,6 @@ const TriTASMIN = () => {
                     <p className="text-red-500">{error}</p>
                 ) : (
                     <>
-                        {/* Control buttons */}
                         <div className="flex gap-4 mb-6">
                             <button
                                 onClick={startAnimation}
@@ -151,7 +152,6 @@ const TriTASMIN = () => {
                             </button>
                         </div>
 
-                        {/* Heap visualization */}
                         {heapData ? (
                             <div className="bg-white p-4 rounded-xl shadow w-full h-[500px] flex items-center justify-center mb-8">
                                 <Tree
@@ -174,7 +174,6 @@ const TriTASMIN = () => {
                             <p className="text-gray-500 mb-8">Aucun tas à afficher</p>
                         )}
 
-                        {/* Sorted values display */}
                         <div className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md text-center">
                             <h2 className="text-lg font-semibold text-green-700 mb-2">
                                 Valeurs triées (Extraction du tas) :

@@ -7,8 +7,9 @@ const Tribitonique = () => {
   const [error, setError] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [animationSpeed, setAnimationSpeed] = useState(1000); // milliseconds
+  const [animationSpeed, setAnimationSpeed] = useState(1000);
   const intervalRef = useRef(null);
+  const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
 
   const handleSort = async () => {
     setIsLoading(true);
@@ -18,7 +19,7 @@ const Tribitonique = () => {
     setIsPlaying(false);
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/bitonique/sort");
+      const response = await fetch(`${BACKEND_URL}/bitonique/sort`);
       const data = await response.json();
 
       if (!response.ok) throw new Error(data.error || "Sorting failed");
@@ -95,7 +96,6 @@ const Tribitonique = () => {
       };
     }
     
-    // Special styling for Infinity values
     if (steps[currentStep].array[index] === "Infinity") {
       return {
         backgroundColor: '#fbbf24',
@@ -130,7 +130,6 @@ const Tribitonique = () => {
           &larr; Back to Algorithms
         </Link>
 
-        {/* Sorting Section */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6 flex flex-col items-center">
           <button
             onClick={handleSort}
