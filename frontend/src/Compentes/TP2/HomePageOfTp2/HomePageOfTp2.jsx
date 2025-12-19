@@ -11,19 +11,19 @@ const HomePageOfTP2 = ({ onUploadComplete }) => {
   const treeFiles = [
     {
       name: "ABR.txt",
-      content: "25, 60, 35, 10, 5, 20, 65, 45, 70, 40, 50, 55, 30, 15, 22, 62, 64, 4, 8" 
+      content: "25, 60, 35, 10, 5, 20, 65, 45, 70, 40, 50, 55, 30, 15, 22, 62, 64, 4, 8"
     },
     {
       name: "AVL.txt",
-      content: "50, 30, 70, 20, 40, 60, 80, 10, 25, 35, 45, 55, 65, 75, 85" 
+      content: "50, 30, 70, 20, 40, 60, 80, 10, 25, 35, 45, 55, 65, 75, 85"
     },
     {
       name: "TAS_MIN.txt",
-      content: "5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100" 
+      content: "5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100"
     },
     {
       name: "TASMAX.txt",
-      content: "100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5" 
+      content: "100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5"
     },
   ];
 
@@ -100,17 +100,7 @@ const HomePageOfTP2 = ({ onUploadComplete }) => {
               ))}
             </select>
           </div>
-          
-          <div className="mb-4 w-full max-w-md">
-            <label className="block mb-2 text-green-700 font-medium">Or upload your own tree file:</label>
-            <input
-              type="file"
-              accept=".txt"
-              onChange={handleUserFileChange}
-              className="mb-3 border border-green-400 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
-            />
-          </div>
-          
+
           <button
             onClick={() => handleUpload("abr")}
             className="px-6 py-2 bg-green-700 text-white rounded-2xl shadow-md hover:bg-green-800 transition-all duration-200"
