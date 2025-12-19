@@ -1,17 +1,30 @@
 import { useState } from "react";
 import {NavBar} from '../../index';
+
 const HomePageOfTP3 = ({ onUploadComplete }) => {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState("");
   const BACKEND_URL = "https://tp-algo-j0wl.onrender.com"
+  
+  // Predefined list of text files
+  const textFiles = [
+    "1 2 8 4 2 0 2 5 7 9",
+    "9 7 3 2 1 ",
+    "5 3 8 6 2 7 4 1",
+    "10 20 15 25 30 5",
+    "12 11 13 14 15 10",
+  ];
+
   const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+    setSelectedFile(e.target.value);
   };
 
   const handleUpload = async (type) => {
     if (!selectedFile) return alert("Please select a file first!");
 
+    // Since we're not actually uploading a file from the user's computer,
+    // we'll send the filename to the backend instead
     const formData = new FormData();
-    formData.append("file", selectedFile);
+    formData.append("filename", selectedFile);
 
     const url =
     type === "abr"
@@ -48,11 +61,16 @@ const HomePageOfTP3 = ({ onUploadComplete }) => {
     <NavBar/>
     <div className="min-h-screen bg-green-50 flex flex-col items-center justify-center p-8">
       <div className="mb-8 flex flex-col items-center">
-        <input
-          type="file"
+        <select
+          value={selectedFile}
           onChange={handleFileChange}
-          className="mb-3 border border-green-400 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-        />
+          className="mb-3 border border-green-400 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500 w-64"
+        >
+          <option value="" disabled>Select a file</option>
+          {textFiles.map((file, index) => (
+            <option key={index} value={file}>{file}</option>
+          ))}
+        </select>
         <button
             onClick={() => handleUpload("abr")}
             className="px-6 py-2 bg-green-700 text-white rounded-2xl shadow-md hover:bg-green-800 transition-all duration-200"
@@ -91,15 +109,6 @@ const HomePageOfTP3 = ({ onUploadComplete }) => {
             Tri par TASMIN
         </a>
         </button>
-
-        {/* <button onClick={() => handleUpload("tasmax")}>
-          <a
-            href="/tp3/Tritasmax"
-            className="px-6 py-3 bg-green-600 text-white rounded-2xl shadow-md hover:bg-green-700 transition-all duration-200"
-          >
-            Tri par TASMAX
-          </a>
-        </button> */}
 
         <button onClick={() => handleUpload("bitonique")}>
           <a
