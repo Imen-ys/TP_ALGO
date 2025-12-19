@@ -47,10 +47,8 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
     const formData = new FormData();
     
     if (useCustomFile && userFile) {
-      // Upload the actual file from user's computer
       formData.append("file", userFile);
     } else if (selectedFile) {
-      // Create a blob from the predefined file content
       const fileData = graphFiles.find(f => f.name === selectedFile);
       if (fileData) {
         const blob = new Blob([fileData.content], { type: 'text/plain' });
@@ -104,17 +102,7 @@ const HomePageOfTPOne = ({ onUploadComplete }) => {
               ))}
             </select>
           </div>
-          
-          <div className="mb-4 w-full max-w-md">
-            <label className="block mb-2 text-green-700 font-medium">Or upload your own graph file:</label>
-            <input
-              type="file"
-              accept=".txt"
-              onChange={handleUserFileChange}
-              className="mb-3 border border-green-400 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
-            />
-          </div>
-          
+
           <button
             onClick={() => handleUpload("grapheOriente")}
             className="px-6 py-2 bg-green-700 text-white rounded-2xl shadow-md hover:bg-green-800 transition-all duration-200"
