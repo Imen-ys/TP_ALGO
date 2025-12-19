@@ -11,15 +11,15 @@ const HomePageOfTP3 = ({ onUploadComplete }) => {
   const textFiles = [
     { 
       name: "TP3.txt", 
-      content: "5\n3\n8\n1\n9\n2\n7\n4\n6" 
+      content: "5\n3\n8\n1\n9\n2\n7\n4\n6\n55\n23\n87\n12\n34\n76\n45\n67\n89\n10"
     },
-    { 
-      name: "Bitonique_cas_pair.txt", 
-      content: "8\n3\n7\n4\n9\n2\n6\n5\n1" 
+    {
+      name: "Bitonique_cas_pair.txt",
+      content: "8\n3\n7\n4\n9\n2\n6\n5"
     },
-    { 
-      name: "Bitonique_cas_impair.txt", 
-      content: "7\n3\n9\n1\n8\n2\n6\n4\n5" 
+    {
+      name: "Bitonique_cas_impair.txt",
+      content: "7\n3\n9\n1\n8"
     },
   ];
 
@@ -98,17 +98,7 @@ const HomePageOfTP3 = ({ onUploadComplete }) => {
               ))}
             </select>
           </div>
-          
-          <div className="mb-4 w-full max-w-md">
-            <label className="block mb-2 text-green-700 font-medium">Or upload your own file:</label>
-            <input
-              type="file"
-              accept=".txt"
-              onChange={handleUserFileChange}
-              className="mb-3 border border-green-400 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
-            />
-          </div>
-          
+
           <button
             onClick={() => handleUpload("abr")}
             className="px-6 py-2 bg-green-700 text-white rounded-2xl shadow-md hover:bg-green-800 transition-all duration-200"
